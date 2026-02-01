@@ -29,9 +29,19 @@ class _GeneratePaperScreenState extends State<GeneratePaperScreen> {
     return Consumer2<QuestionData, ProgressData>(
       builder: (context, questionData, proData, child) {
         return Scaffold(
-          floatingActionButton: FloatingActionButton(onPressed: () {
-            proData.setDarkMode();
-          }),
+          floatingActionButton: Padding(
+            padding: const EdgeInsets.only(bottom: 20.0, right: 20.0),
+            child: FloatingActionButton(
+              backgroundColor: Color(0xff26A69A),
+              onPressed: () {
+                Provider.of<ProgressData>(context, listen: false).setDarkMode();
+              },
+              child: Icon(
+                proData.darkMode ? Icons.light_mode : Icons.dark_mode,
+                color: Colors.white,
+              ),
+            ),
+          ),
           backgroundColor:
               proData.darkMode ? Color(0xff0A0E27) : Color(0xffFDFBF7),
           body: ModalProgressHUD(

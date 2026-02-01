@@ -106,7 +106,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${qData.getTime()[0]} ${authData.fn.isNotEmpty ? authData.fn[0].toUpperCase() + authData.fn.substring(1).toLowerCase() : "User"} ${qData.getTime()[1]},',
+                          '${qData.getTime()[0]} ${authData.fn.isNotEmpty ? authData.fn[0].toUpperCase() + authData.fn.substring(1).toLowerCase() : "User"} ${qData.getTime()[1]}',
                           style: TextStyle(
                             fontFamily: 'Copper',
                             color: proData.darkMode
@@ -186,7 +186,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                             Row(
                               children: [
                                 MyBox(FontAwesomeIcons.calculator,
-                                    "Mathematics", '', () {},
+                                    "Mathematics", '', () {
+                                  qData.addSubject('Mathematics');
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              GeneratePaperScreen()));
+                                },
                                     color: proData.darkMode
                                         ? Colors.white30
                                         : Colors.grey[800]),
@@ -194,8 +201,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                   width: 10.0,
                                 ),
                                 MyBox(FontAwesomeIcons.earthAsia,
-                                    "General Knowledge", '', () {},
-                                    color: Colors.blue[900]),
+                                    "General Knowledge", '', () {
+                                  qData.addSubject('General Knowledge');
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              GeneratePaperScreen()));
+                                }, color: Colors.blue[900]),
                                 SizedBox(
                                   width: 10.0,
                                 ),
@@ -203,7 +216,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                   FontAwesomeIcons.brain,
                                   'Aptitude&Reasoning',
                                   '',
-                                  () {},
+                                  () {
+                                    qData.addSubject('Aptitude&Reasoning');
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                GeneratePaperScreen()));
+                                  },
                                   color: Color(0xfffa87a2),
                                 ),
                                 SizedBox(
@@ -220,15 +240,28 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                   FontAwesomeIcons.a,
                                   "English",
                                   '',
-                                  () {},
+                                  () {
+                                    qData.addSubject('English');
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                GeneratePaperScreen()));
+                                  },
                                   color: Colors.amber,
                                 ),
                                 SizedBox(
                                   width: 10.0,
                                 ),
                                 MyBox(FontAwesomeIcons.computer,
-                                    "Computer Science", '', () {},
-                                    color: Colors.grey),
+                                    "Computer Science", '', () {
+                                  qData.addSubject('Computer Science');
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              GeneratePaperScreen()));
+                                }, color: Colors.grey),
                                 SizedBox(
                                   width: 10.0,
                                 ),
@@ -236,7 +269,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                   FontAwesomeIcons.apple,
                                   'DSA',
                                   '',
-                                  () {},
+                                  () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                GeneratePaperScreen()));
+                                  },
                                   color: Colors.red,
                                 ),
                                 SizedBox(
@@ -246,6 +285,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                             ),
                             SizedBox(height: 30.0),
                             MyButton('Settings & Preferences ⚙️', () {
+                              qData.addSubject('DSA');
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(

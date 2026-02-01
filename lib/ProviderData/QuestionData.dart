@@ -93,6 +93,8 @@ class QuestionData extends ChangeNotifier {
     'Statistics',
     'DSA',
     'Hindi',
+    'General Knowledge',
+    'Aptitude&Reasoning',
   ];
 
   final List<String> coolTagLines = [
@@ -401,46 +403,31 @@ class QuestionData extends ChangeNotifier {
   get prompt => _prompt;
 
   void buildPrompt() {
-    final buffer = StringBuffer();
-    buffer.writeln(
-        "You are a question paper generator. Generate questions in VALID JSON format.");
-    buffer.writeln();
-    buffer.writeln("Subjects:");
-    for (var subject in _selectedSubjects) {
-      buffer.writeln(
-          "- ${subject.name}: ${subject.difficulty}, ${subject.questionCount} questions${subject.needOption ? ', with options' : ''}");
-    }
-    buffer.writeln();
-    buffer.writeln("JSON RULES (CRITICAL):");
-    buffer.writeln("1. Return ONLY JSON array starting with [ ending with ]");
-    buffer.writeln("2. NO markdown, NO backticks, NO ``` blocks");
-    buffer.writeln(
-        "3. NO double quotes (\") inside text - use single quotes (') instead");
-    buffer.writeln("4. NO backslashes (\\) - NO LaTeX - NO \$symbols\$");
-    buffer.writeln("5. NO line breaks inside strings");
-    buffer.writeln();
-
     final hasOptions = _selectedSubjects.any((s) => s.needOption);
+    final totalQs =
+        _selectedSubjects.fold(0, (sum, s) => sum + s.questionCount);
 
-    buffer.writeln("Structure:");
-    buffer.writeln("""
-[{"subject":"Math","difficulty":"Medium","questions":[
-  {"question":"What is x² + 2x when x=3?",${hasOptions ? '"options":["A","B","C","D"],' : ''}"answer":"15","explanation":"Substitute x=3: (3)² + 2(3) = 9 + 6 = 15"}
-]}]
-""");
-    buffer.writeln();
-    buffer.writeln("Math notation - USE ONLY:");
-    buffer.writeln(
-        "Powers: x² x³ or x^2 x^3 | Roots: √2 or sqrt(2) | Fractions: ½ or 1/2");
-    buffer.writeln(
-        "Greek: π θ α β γ | Operators: × ÷ ± ≠ ≤ ≥ ∞ | Functions: sin(x) cos(x) log(x)");
-    buffer.writeln();
-    buffer.writeln("✓ CORRECT: \"The formula is area = ½ × base × height\"");
-    buffer.writeln(
-        "✗ WRONG: \"The \\\"formula\\\" is \\frac{1}{2}\" (quotes/backslashes break JSON)");
-    buffer.writeln();
-    buffer.writeln(
-        "Generate ${_selectedSubjects.fold(0, (sum, s) => sum + s.questionCount)} total questions. Keep explanations brief (1-2 sentences). Ensure valid JSON that parses in Dart.");
+    final buffer = StringBuffer();
+    buffer.writeln("Generate $totalQs questions in valid JSON array format.");
+    buffer.writeln("\nSubjects:");
+    for (var s in _selectedSubjects) {
+      buffer.writeln(
+          "${s.name}: ${s.difficulty}, ${s.questionCount}q${s.needOption ? ', +options' : ''}");
+    }
+
+    buffer.writeln("\nFormat (return ONLY this structure):");
+    buffer.write('[{"subject":"Math","difficulty":"Medium","questions":[');
+    buffer.write('{"question":"What is x² + 2x when x=3?"');
+    if (hasOptions) buffer.write(',"options":["11","13","15","17"]');
+    buffer.writeln(',"answer":"15","explanation":"Substitute: 9 + 6 = 15"}');
+    buffer.writeln(']}]');
+
+    buffer.writeln("\nRules:");
+    buffer.writeln("• Return ONLY JSON array [...]");
+    buffer.writeln("• NO markdown/backticks");
+    buffer.writeln("• Use ' not \" inside text");
+    buffer.writeln("• Math: x² √2 π ½ sin(x) - NO LaTeX/backslashes");
+    buffer.writeln("• Brief explanations (1-2 lines)");
 
     _prompt = buffer.toString();
     notifyListeners();
@@ -523,7 +510,6 @@ class QuestionData extends ChangeNotifier {
 
       // Generate content from Gemini
       final response = await model.generateContent(promptToSend);
-
       if (response.text == null || response.text!.isEmpty) {
         print('Error: Empty response from Gemini');
         return null;
@@ -571,7 +557,7 @@ class QuestionData extends ChangeNotifier {
       _generatedPapers.add(paper);
       notifyListeners();
       Navigator.push(context,
-          MaterialPageRoute(builder: (context) => FinalQuestionScreen()));
+          MaterialPageRoute(builder: (context) => DisplayQuestionsScreen()));
       print('✅ Successfully generated paper with $totalQuestions questions');
 
       return paper;

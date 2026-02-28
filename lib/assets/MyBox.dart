@@ -47,6 +47,7 @@ class MyBox extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                   color: Color(0xff26A69A),
                 ),
+                textAlign: TextAlign.center,
               ),
               SizedBox(height: 4),
               Text(

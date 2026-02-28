@@ -1,7 +1,9 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:paper_gen/ProviderData/AuthorisationData.dart';
+import 'package:paper_gen/screens/FinalQuestionScreen.dart';
 import 'package:paper_gen/screens/LoginScreen.dart';
+import 'package:paper_gen/screens/ScoreScreen.dart';
 import 'package:paper_gen/screens/WelcomeScreen.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -34,10 +36,11 @@ class MyApp extends StatelessWidget {
         home: Consumer<AuthorisationData>(
           builder: (context, authData, child) {
             return Scaffold(
-                backgroundColor: Colors.transparent,
-                body: authData.rememberedData
-                    ? WelcomeScreen()
-                    : AuthorisationScreen());
+              backgroundColor: Colors.transparent,
+              body: authData.rememberedData
+                  ? WelcomeScreen()
+                  : AuthorisationScreen(),
+            );
           },
         ),
       ),

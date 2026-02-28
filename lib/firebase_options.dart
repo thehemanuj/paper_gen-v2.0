@@ -52,7 +52,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyBB7KOPI12HCkHCWikAXCagAGs21-EHUGE',
-    appId: '1:72439715330:android:6110274bb333168009b91b',
+    appId: '1:72439715330:android:fd74945ea5a1d5d409b91b',
     messagingSenderId: '72439715330',
     projectId: 'paper-gen-97dfd',
     storageBucket: 'paper-gen-97dfd.firebasestorage.app',
@@ -64,6 +64,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '72439715330',
     projectId: 'paper-gen-97dfd',
     storageBucket: 'paper-gen-97dfd.firebasestorage.app',
+    iosClientId: '72439715330-mphr25tlu96oq4ssgr600bqcksoal9nm.apps.googleusercontent.com',
     iosBundleId: 'com.example.paperGen',
   );
 
@@ -73,6 +74,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '72439715330',
     projectId: 'paper-gen-97dfd',
     storageBucket: 'paper-gen-97dfd.firebasestorage.app',
+    iosClientId: '72439715330-mphr25tlu96oq4ssgr600bqcksoal9nm.apps.googleusercontent.com',
     iosBundleId: 'com.example.paperGen',
   );
 

@@ -112,7 +112,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                             color: proData.darkMode
                                 ? Color(0xffFDFBF7)
                                 : Color(0xff0A0E27),
-                            fontSize: 30.0,
+                            fontSize: 25.0,
                           ),
                         ),
                         Text(
@@ -160,9 +160,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                         ),
                         MyLongBox(
                             qData.pastPapers.length,
-                            qData.correct,
-                            qData.totalAttempted,
-                            qData.subjects.length,
+                            qData.totalQuestionsCorrect,
+                            qData.totalQuestionsAttempted,
+                            qData.subjectsAttempted.length,
                             1,
                             () {}),
                         SizedBox(
@@ -187,7 +187,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                               children: [
                                 MyBox(FontAwesomeIcons.calculator,
                                     "Mathematics", '', () {
-                                  qData.addSubject('Mathematics');
+                                  qData.selectSubject('Mathematics');
                                   Navigator.push(
                                       context,
                                       MaterialPageRoute(
@@ -202,7 +202,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                 ),
                                 MyBox(FontAwesomeIcons.earthAsia,
                                     "General Knowledge", '', () {
-                                  qData.addSubject('General Knowledge');
+                                  qData.selectSubject('General Knowledge');
                                   Navigator.push(
                                       context,
                                       MaterialPageRoute(
@@ -214,10 +214,10 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                 ),
                                 MyBox(
                                   FontAwesomeIcons.brain,
-                                  'Aptitude&Reasoning',
+                                  'Aptitude & Reasoning',
                                   '',
                                   () {
-                                    qData.addSubject('Aptitude&Reasoning');
+                                    qData.selectSubject('Aptitude&Reasoning');
                                     Navigator.push(
                                         context,
                                         MaterialPageRoute(
@@ -241,7 +241,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                   "English",
                                   '',
                                   () {
-                                    qData.addSubject('English');
+                                    qData.selectSubject('English');
                                     Navigator.push(
                                         context,
                                         MaterialPageRoute(
@@ -255,7 +255,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                 ),
                                 MyBox(FontAwesomeIcons.computer,
                                     "Computer Science", '', () {
-                                  qData.addSubject('Computer Science');
+                                  qData.selectSubject('Computer Science');
                                   Navigator.push(
                                       context,
                                       MaterialPageRoute(
@@ -270,6 +270,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                   'DSA',
                                   '',
                                   () {
+                                    qData.selectSubject('DSA');
                                     Navigator.push(
                                         context,
                                         MaterialPageRoute(
@@ -285,7 +286,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                             ),
                             SizedBox(height: 30.0),
                             MyButton('Settings & Preferences ⚙️', () {
-                              qData.addSubject('DSA');
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(

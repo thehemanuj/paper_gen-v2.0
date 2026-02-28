@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 import 'package:paper_gen/ProviderData/AuthorisationData.dart';
 import 'package:paper_gen/ProviderData/ProgressData.dart';
 import 'package:paper_gen/assets/HelperClasses.dart';
+import 'package:http/http.dart' as http;
 
 import '../screens/FinalQuestionScreen.dart';
 
@@ -24,14 +25,12 @@ class SubjectConfig {
   String name;
   String difficulty;
   int questionCount;
-  bool needOption;
 
   SubjectConfig({
     required this.id,
     required this.name,
     required this.difficulty,
     required this.questionCount,
-    required this.needOption,
   });
 
   Map<String, dynamic> toMap() {
@@ -40,7 +39,6 @@ class SubjectConfig {
       'name': name,
       'difficulty': difficulty,
       'questionCount': questionCount,
-      'needOption': needOption,
     };
   }
 
@@ -50,7 +48,6 @@ class SubjectConfig {
       name: map['name'] ?? '',
       difficulty: map['difficulty'] ?? 'Medium',
       questionCount: map['questionCount'] ?? 10,
-      needOption: map['needOption'] ?? false,
     );
   }
 }
@@ -130,80 +127,83 @@ class QuestionData extends ChangeNotifier {
     "What's the milestone you're aiming for?",
   ];
 
-  final int _maxSubjects = 5;
-  final int _maxQuestionsAllowed = 99;
+  final int _maxQuestionsAllowed = 100;
 
   // ============================================================================
   // STATE VARIABLES
   // ============================================================================
 
   // User data
-  var _pastPapers = [];
-  var _correct = 0;
+  var _avatar = "";
+  var _config = Map<int, int>();
+  var _totalQuestionsGenerated = 0;
+  var _totalQuestionsViewed = 0;
   var _totalQuestionsAttempted = 0;
-  var _subjects = [];
-  var _avatar = '';
+  var _totalQuestionsCorrect = 0;
+  var _totalQuestionsIncorrect = 0;
+  List<String> _subjectsAttempted = [];
+  var _streak = 0;
+  var _badges = [];
+  var _role = "student";
+  var _coins = 0;
+  var _pastPapers = [];
+  var _correctLocal = 0;
+  var _attempted = Map<int, int>();
   bool _isDataLoaded = false;
 
   // Difficulty settings
   String _selectedDefaultDifficulty = 'Easy';
   var _selectedDifficulty = '';
 
-  // Paper generation
-  final List<SubjectConfig> _selectedSubjects = [];
+  // Paper generation — single subject only
+  SubjectConfig? _selectedSubject;
   GeneratedPaper? _currentGeneratedPaper;
   final List<GeneratedPaper> _generatedPapers = [];
+  var _viewed = <int>{0};
 
   // ============================================================================
   // GETTERS
   // ============================================================================
 
-  // User data getters
+  // Example getters for your class fields
+
+  String get avatar => _avatar;
+  Map<int, int> get config => _config;
+  int get totalQuestionsGenerated => _totalQuestionsGenerated;
+  int get totalQuestionsViewed => _totalQuestionsViewed;
+  int get totalQuestionsAttempted => _totalQuestionsAttempted;
+  int get totalQuestionsCorrect => _totalQuestionsCorrect;
+  int get totalQuestionsIncorrect => _totalQuestionsIncorrect;
+  List get subjectsAttempted => _subjectsAttempted;
+  int get streak => _streak;
+  List get badges => _badges;
+  String get role => _role;
+  int get coins => _coins;
+  List get pastPapers => _pastPapers;
+  int get correctLocal => _correctLocal;
+  Map<int, int> get attempted => _attempted;
   bool get isDataLoaded => _isDataLoaded;
+// Difficulty settings
+  String get selectedDefaultDifficulty => _selectedDefaultDifficulty;
+  String get selectedDifficulty => _selectedDifficulty;
 
-  get pastPapers => _pastPapers;
-
-  get correct => _correct;
-
-  get totalAttempted => _totalQuestionsAttempted;
-
-  get subjects => _subjects;
-
-  // Difficulty getters
-  get selectedDefaultDifficulty => _selectedDefaultDifficulty;
-
-  get difficultyList => _difficultyList;
-
-  get selectedDifficulty => _selectedDifficulty;
-
-  // Paper generation getters
+// Paper generation
+  SubjectConfig? get selectedSubject => _selectedSubject;
+  GeneratedPaper? get currentGeneratedPaper => _currentGeneratedPaper;
+  List<GeneratedPaper> get generatedPapers => _generatedPapers;
+  Set<int> get viewed => _viewed;
   List<String> get availableSubjects => _availableSubjects;
 
-  List<SubjectConfig> get selectedSubjects => _selectedSubjects;
-
-  int get maxSubjects => _maxSubjects;
-
   int get maxQuestionsAllowed => _maxQuestionsAllowed;
-
-  GeneratedPaper? get currentGeneratedPaper => _currentGeneratedPaper;
-
-  List<GeneratedPaper> get generatedPapers => _generatedPapers;
-
-  bool get canAddMoreSubjects =>
-      _selectedSubjects.length < _maxSubjects &&
-      _selectedSubjects.fold(
-              0, (sum, subject) => sum + subject.questionCount) <=
-          _maxQuestionsAllowed;
-
-  int get totalQuestions =>
-      _selectedSubjects.fold(0, (sum, subject) => sum + subject.questionCount);
-
+  bool get isSubjectSelected => _selectedSubject != null;
+  int get totalQuestions => _selectedSubject?.questionCount ?? 0;
+  get difficultyList => _difficultyList;
   // ============================================================================
   // USER DATA METHODS
   // ============================================================================
 
-  setCorrect() {
-    _correct += 1;
+  setTotalQuestionsGenerated(int value) {
+    _totalQuestionsGenerated += value;
     notifyListeners();
   }
 
@@ -212,9 +212,64 @@ class QuestionData extends ChangeNotifier {
     notifyListeners();
   }
 
+  setTotalQuestionsIncorrect() {
+    _totalQuestionsIncorrect += 1;
+    notifyListeners();
+  }
+
   getImage() {
     String image = multiavatar(_avatar);
     return image;
+  }
+
+  setCorrect() {
+    _correctLocal += 1;
+    _totalQuestionsCorrect += 1;
+    notifyListeners();
+  }
+
+  setAttempted(int questionNumber, int optionNumber) {
+    if (!_attempted.containsKey(questionNumber)) {
+      setTotalQuestionsAttempted();
+    }
+    _attempted[questionNumber] = optionNumber;
+
+    notifyListeners();
+  }
+
+  setTotalQuestionsViewed() {
+    _totalQuestionsViewed += 1;
+    notifyListeners();
+  }
+
+  setViewed(value) {
+    if (!_viewed.contains(value)) {
+      setTotalQuestionsViewed();
+    }
+    _viewed.add(value);
+    notifyListeners();
+  }
+
+  setCoins(int coins) {
+    _coins += coins;
+    notifyListeners();
+  }
+
+  setBadges(String badge) {
+    _badges.add(badge);
+    notifyListeners();
+  }
+
+  void setSubjectsAttempted(String subject) {
+    if (!_subjectsAttempted.contains(subject)) {
+      _subjectsAttempted.add(subject);
+      notifyListeners();
+    }
+  }
+
+  void setStreak() {
+    _streak += 1;
+    notifyListeners();
   }
 
   // ============================================================================
@@ -235,61 +290,47 @@ class QuestionData extends ChangeNotifier {
   // SUBJECT MANAGEMENT METHODS
   // ============================================================================
 
-  void addSubject(String subjectName) {
-    if (_selectedSubjects.length >= _maxSubjects) return;
-    if (_selectedSubjects.any((s) => s.name == subjectName)) return;
-    if (totalQuestions > _maxQuestionsAllowed) return;
-
-    _selectedSubjects.add(SubjectConfig(
+  /// Selects a subject. Replaces any previously selected subject.
+  void selectSubject(String subjectName) {
+    _selectedSubject = SubjectConfig(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       name: subjectName,
-      difficulty: 'Medium',
+      difficulty: _selectedDefaultDifficulty,
       questionCount: 10,
-      needOption: false,
-    ));
+    );
     notifyListeners();
   }
 
-  void removeSubject(String id) {
-    _selectedSubjects.removeWhere((s) => s.id == id);
+  /// Clears the currently selected subject.
+  void clearSelectedSubject() {
+    _selectedSubject = null;
     notifyListeners();
   }
 
-  void updateSubjectDifficulty(String id, String difficulty) {
-    final index = _selectedSubjects.indexWhere((s) => s.id == id);
-    if (index != -1) {
-      _selectedSubjects[index].difficulty = difficulty;
-      notifyListeners();
-    }
-  }
-
-  void updateSubjectQuestionCount(String id, int count) {
-    final index = _selectedSubjects.indexWhere((s) => s.id == id);
-    if (index != -1) {
-      _selectedSubjects[index].questionCount = count.clamp(1, 50);
-      notifyListeners();
-    }
-  }
-
-  void checkbox(String id, value) {
-    final index = _selectedSubjects.indexWhere((s) => s.id == id);
-    if (index != -1) {
-      _selectedSubjects[index].needOption = value;
-      notifyListeners();
-    }
-  }
-
-  void clearSelectedSubjects() {
-    _selectedSubjects.clear();
+  /// Updates the difficulty of the selected subject.
+  void updateDifficulty(String difficulty) {
+    if (_selectedSubject == null) return;
+    _selectedSubject!.difficulty = difficulty;
     notifyListeners();
   }
 
+  /// Updates the question count of the selected subject, clamped between 1 and maxQuestionsAllowed.
+  void updateQuestionCount(int count) {
+    if (_selectedSubject == null) return;
+    _selectedSubject!.questionCount = count.clamp(1, _maxQuestionsAllowed);
+    notifyListeners();
+  }
+
+  /// Toggles whether the selected subject should include multiple-choice options.
+
+  /// Returns available subjects filtered by a search query.
+  /// Excludes the currently selected subject so it can't be picked again.
   List<String> getFilteredSubjects(String query) {
     final lowerQuery = query.toLowerCase();
     return _availableSubjects
         .where((subject) =>
             subject.toLowerCase().contains(lowerQuery) &&
-            !_selectedSubjects.any((s) => s.name == subject))
+            subject != _selectedSubject?.name)
         .toList();
   }
 
@@ -359,11 +400,23 @@ class QuestionData extends ChangeNotifier {
       if (snapshot.exists) {
         final data = snapshot.data() as Map;
 
-        _avatar = (data['avatar'] ?? email) as String;
-        _correct = (data['correctQuestions'] ?? 0) as int;
-        _totalQuestionsAttempted = (data['totalQuestions'] ?? 0) as int;
-        _pastPapers = (data['pastPapers'] ?? []) as List;
-        _subjects = (data['subjects'] ?? []) as List;
+        _avatar = (data['config']['avatar'] ?? email) as String;
+        _selectedDefaultDifficulty =
+            (data['config']['difficulty'] ?? "Easy") as String;
+        _role = (data['config']['role'] ?? "student") as String;
+        _totalQuestionsGenerated =
+            (data['totalQuestionsGenerated'] ?? 0) as int;
+        _totalQuestionsViewed = (data['totalQuestionsViewed'] ?? 0) as int;
+        _totalQuestionsCorrect = (data['totalQuestionsCorrect'] ?? 0) as int;
+        _totalQuestionsAttempted =
+            (data['totalQuestionsAttempted'] ?? 0) as int;
+        _totalQuestionsIncorrect =
+            (data['totalQuestionsIncorrect'] ?? 0) as int;
+        _subjectsAttempted = (data['subjectsAttempted'] ?? []) as List<String>;
+        _streak = (data['streak'] ?? 0) as int;
+        _badges = (data['badges'] ?? []) as List;
+        _coins = (data['coins'] ?? 0) as int;
+
         _isDataLoaded = true;
         notifyListeners();
       } else {
@@ -380,14 +433,20 @@ class QuestionData extends ChangeNotifier {
     }
   }
 
+  void showError(BuildContext context, message) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
+
   void resetData() {
+    _attempted = {};
+    _viewed = <int>{};
     _pastPapers = [];
-    _correct = 0;
+    _correctLocal = 0;
     _totalQuestionsAttempted = 0;
-    _subjects = [];
     _avatar = '';
     _isDataLoaded = false;
-    _selectedSubjects.clear();
+    _selectedSubject = null;
     notifyListeners();
   }
 
@@ -396,29 +455,26 @@ class QuestionData extends ChangeNotifier {
   // ============================================================================
 
   final model =
-      FirebaseAI.googleAI().generativeModel(model: 'gemini-2.0-flash-lite');
+      FirebaseAI.googleAI().generativeModel(model: 'gemini-2.5-flash');
 
   String _prompt = '';
 
   get prompt => _prompt;
 
   void buildPrompt() {
-    final hasOptions = _selectedSubjects.any((s) => s.needOption);
-    final totalQs =
-        _selectedSubjects.fold(0, (sum, s) => sum + s.questionCount);
+    if (_selectedSubject == null) return;
+
+    final s = _selectedSubject!;
 
     final buffer = StringBuffer();
-    buffer.writeln("Generate $totalQs questions in valid JSON array format.");
-    buffer.writeln("\nSubjects:");
-    for (var s in _selectedSubjects) {
-      buffer.writeln(
-          "${s.name}: ${s.difficulty}, ${s.questionCount}q${s.needOption ? ', +options' : ''}");
-    }
+    buffer.writeln(
+        "Generate ${s.questionCount} questions for ${s.name} at ${s.difficulty} difficulty in valid JSON array format.");
 
     buffer.writeln("\nFormat (return ONLY this structure):");
-    buffer.write('[{"subject":"Math","difficulty":"Medium","questions":[');
+    buffer.write(
+        '[{"subject":"${s.name}","difficulty":"${s.difficulty}","questions":[');
     buffer.write('{"question":"What is x² + 2x when x=3?"');
-    if (hasOptions) buffer.write(',"options":["11","13","15","17"]');
+    buffer.write(',"options":["11","13","15","17"]');
     buffer.writeln(',"answer":"15","explanation":"Substitute: 9 + 6 = 15"}');
     buffer.writeln(']}]');
 
@@ -482,7 +538,6 @@ class QuestionData extends ChangeNotifier {
           }
         } catch (e) {
           print('❌ Error parsing subject ${i + 1}: $e');
-          // Continue to next subject instead of failing completely
           continue;
         }
       }
@@ -495,42 +550,65 @@ class QuestionData extends ChangeNotifier {
 
       return subjects;
     } catch (e, stackTrace) {
-      print('❌ CRITICAL ERROR in parseGeminiResponse: $e');
-      print('Stack trace: $stackTrace');
-      print('─── Full Response ───');
-      print(response);
-      print('─────────────────────');
       return [];
     }
   }
 
   Future<GeneratedPaper?> generateFromPrompt(context) async {
-    try {
-      final promptToSend = [Content.text(_prompt)];
+    if (_selectedSubject == null) {
+      print('❌ Error: No subject selected');
+      return null;
+    }
 
-      // Generate content from Gemini
-      final response = await model.generateContent(promptToSend);
-      if (response.text == null || response.text!.isEmpty) {
-        print('Error: Empty response from Gemini');
+    try {
+      const String apiKey = "AIzaSyAoWmNDwsp0hA0KNejAATbMy6wSAMcPcBs";
+
+      final url = Uri.parse(
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey",
+      );
+
+      final body = jsonEncode({
+        "contents": [
+          {
+            "parts": [
+              {"text": _prompt}
+            ]
+          }
+        ]
+      });
+
+      final res = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: body,
+      );
+
+      if (res.statusCode != 200) {
+        showError(context, "❌ Gemini API Error: ${res.body}");
+        return null;
+      }
+
+      final data = jsonDecode(res.body);
+
+      final text = data["candidates"]?[0]?["content"]?["parts"]?[0]?["text"];
+
+      if (text == null || text.isEmpty) {
+        showError(context, 'Error: Empty response from Gemini');
         return null;
       }
 
       print('✅ Received response from Gemini');
-      //print(response.text);
 
-      // Parse the response
-      final subjects = parseGeminiResponse(response.text!);
+      // Parse the response (unchanged)
+      final subjects = parseGeminiResponse(text);
 
       if (subjects.isEmpty) {
-        print('Error: No subjects parsed from response');
+        showError(context, 'Error: No subjects parsed from response');
         return null;
       }
 
-      // Calculate total questions
-      int totalQuestions = 0;
-      for (var subject in subjects) {
-        totalQuestions += subject.questions.length;
-      }
+      // Total questions comes directly from the single parsed subject
+      final totalQuestions = subjects[0].questions.length;
 
       final id = generateUniqueId();
       final paper = GeneratedPaper(
@@ -549,7 +627,6 @@ class QuestionData extends ChangeNotifier {
         print('✅ Paper saved to Firebase');
       } catch (e) {
         print('⚠️ Could not save to Firebase: $e');
-        // Continue anyway, we have the paper in memory
       }
 
       // Store the paper locally
@@ -559,11 +636,144 @@ class QuestionData extends ChangeNotifier {
       Navigator.push(context,
           MaterialPageRoute(builder: (context) => DisplayQuestionsScreen()));
       print('✅ Successfully generated paper with $totalQuestions questions');
-
+      _totalQuestionsGenerated += _selectedSubject!.questionCount;
+      setSubjectsAttempted(_selectedSubject!.name);
       return paper;
     } catch (e) {
-      print("❌ Error generating paper: $e");
+      showError(context, "❌ Error generating paper: $e");
       return null;
+    }
+  }
+
+  GeneratedPaper getDummyPaper() {
+    return GeneratedPaper(
+      id: '2026_02_01_W5_120000',
+      createdAt: DateTime.now(),
+      totalQuestions: 10,
+      subjects: [
+        SubjectQuestions(
+          subject: 'Mathematics',
+          difficulty: 'Medium',
+          questions: [
+            Question(
+              question: 'What is the value of x² + 3x when x = 4?',
+              options: ['24', '28', '30', '32'],
+              answer: '28',
+              explanation: 'x² = 16, 3x = 12. So 16 + 12 = 28.',
+            ),
+            Question(
+              question: 'What is the area of a circle with radius 5?',
+              options: ['25π', '50π', '10π', '75π'],
+              answer: '25π',
+              explanation: 'Area = πr². So π × 5² = 25π.',
+            ),
+            Question(
+              question: 'Simplify: (2³)²',
+              options: ['32', '64', '128', '16'],
+              answer: '64',
+              explanation: '(2³)² = 2⁶ = 64.',
+            ),
+            Question(
+              question: 'What is 15% of 200?',
+              options: ['25', '30', '35', '40'],
+              answer: '30',
+              explanation: '15% of 200 = (15/100) × 200 = 30.',
+            ),
+            Question(
+              question: 'Solve for x: 2x + 10 = 30',
+              options: ['5', '8', '10', '15'],
+              answer: '10',
+              explanation: '2x = 30 - 10 = 20. So x = 10.',
+            ),
+          ],
+        ),
+        SubjectQuestions(
+          subject: 'Computer Science',
+          difficulty: 'Hard',
+          questions: [
+            Question(
+              question:
+                  'What is the time complexity of binary search on a sorted array?',
+              options: ['O(n)', 'O(n²)', 'O(log n)', 'O(n log n)'],
+              answer: 'O(log n)',
+              explanation:
+                  'Binary search halves the search space each step, giving logarithmic complexity.',
+            ),
+            Question(
+              question: 'Which data structure is used in BFS?',
+              options: ['Stack', 'Queue', 'Linked List', 'Tree'],
+              answer: 'Queue',
+              explanation:
+                  'BFS explores nodes level by level, so it uses a queue to track the order.',
+            ),
+            Question(
+              question: 'What does SQL stand for?',
+              options: [
+                'Simple Query Language',
+                'Structured Query Language',
+                'System Query Logic',
+                'Sequential Query Language'
+              ],
+              answer: 'Structured Query Language',
+              explanation:
+                  'SQL is a standard language for managing and querying relational databases.',
+            ),
+            Question(
+              question:
+                  'Which sorting algorithm has an average case complexity of O(n log n)?',
+              options: [
+                'Bubble Sort',
+                'Selection Sort',
+                'Merge Sort',
+                'Linear Sort'
+              ],
+              answer: 'Merge Sort',
+              explanation:
+                  'Merge sort divides the array in half recursively and merges, always O(n log n).',
+            ),
+            Question(
+              question: 'What is the purpose of a stack in memory?',
+              options: [
+                'Stores global variables',
+                'Stores local variables and function calls',
+                'Manages heap allocation',
+                'Handles network I/O'
+              ],
+              answer: 'Stores local variables and function calls',
+              explanation:
+                  'The stack manages local scope — local variables and the call chain of functions.',
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  void saveMetricsToFirebase(BuildContext context) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection(
+              Provider.of<AuthorisationData>(context, listen: false).email)
+          .doc(Provider.of<AuthorisationData>(context, listen: false).email)
+          .set({
+        "config": {
+          "avatar": _avatar,
+          "difficulty": _selectedDefaultDifficulty,
+          "role": _role
+        },
+        "totalQuestionsGenerated": _totalQuestionsGenerated,
+        "totalQuestionsViewed": _totalQuestionsViewed,
+        "totalQuestionsAttempted": _totalQuestionsAttempted,
+        "totalQuestionsCorrect": _totalQuestionsCorrect,
+        "totalQuestionsIncorrect": _totalQuestionsIncorrect,
+        "streak": _streak,
+        "subjectsAttempted": _subjectsAttempted,
+        "badges": _badges,
+        "coins": _coins
+      });
+      print('✅ Paper saved to Firebase');
+    } catch (e) {
+      showError(context, '⚠️ Could not save to Firebase: $e');
     }
   }
 }

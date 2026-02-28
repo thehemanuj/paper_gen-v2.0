@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:paper_gen/ProviderData/ProgressData.dart';
 import 'package:paper_gen/assets/Button.dart';
+import 'package:paper_gen/screens/FinalQuestionScreen.dart';
 import 'package:provider/provider.dart';
 import 'package:paper_gen/ProviderData/QuestionData.dart';
 
@@ -13,7 +14,7 @@ class GeneratePaperScreen extends StatefulWidget {
 }
 
 class _GeneratePaperScreenState extends State<GeneratePaperScreen> {
-  bool _showSubjectInput = false;
+  bool _showSubjectPicker = false;
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
 
@@ -72,25 +73,14 @@ class _GeneratePaperScreenState extends State<GeneratePaperScreen> {
                         _buildInstructionCard(proData),
                         const SizedBox(height: 16),
 
-                        // Subjects List
-                        ...questionData.selectedSubjects
-                            .map((subject) => Padding(
-                                  padding: const EdgeInsets.only(bottom: 12),
-                                  child: _buildSubjectCard(
-                                      context, questionData, proData, subject),
-                                ))
-                            .toList(),
-
-                        // Add Subject Button/Input
-                        if (questionData.canAddMoreSubjects)
-                          _buildAddSubjectSection(
+                        // If a subject is selected, show its config card
+                        if (questionData.isSubjectSelected)
+                          _buildSubjectCard(context, questionData, proData,
+                              questionData.selectedSubject!)
+                        // Otherwise show the picker button or the open picker
+                        else
+                          _buildSubjectPickerSection(
                               context, questionData, proData),
-
-                        // Summary Card
-                        if (questionData.selectedSubjects.isNotEmpty) ...[
-                          const SizedBox(height: 16),
-                          _buildSummaryCard(questionData),
-                        ],
 
                         const SizedBox(height: 100), // Space for button
                       ],
@@ -155,7 +145,7 @@ class _GeneratePaperScreenState extends State<GeneratePaperScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Add up to 5 subjects, select difficulty level, and set the number of questions for each subject.',
+                  'Select a subject, choose a difficulty level, and set the number of questions.',
                   style: TextStyle(
                       fontSize: 13,
                       color: Colors.grey[600],
@@ -176,7 +166,7 @@ class _GeneratePaperScreenState extends State<GeneratePaperScreen> {
       'Easy',
       'Medium',
       'Hard',
-      'Extreme',
+      'Expert',
       'Professional',
       'God'
     ];
@@ -210,9 +200,23 @@ class _GeneratePaperScreenState extends State<GeneratePaperScreen> {
                       fontFamily: 'Copper'),
                 ),
               ),
+              // Change button to swap subject
+              IconButton(
+                icon: const Icon(Icons.swap_horiz, color: Color(0xFF1ABC9C)),
+                onPressed: () {
+                  questionData.clearSelectedSubject();
+                  setState(() {
+                    _showSubjectPicker = true;
+                  });
+                  Future.delayed(const Duration(milliseconds: 100), () {
+                    _searchFocusNode.requestFocus();
+                  });
+                },
+              ),
+              // Clear / remove subject
               IconButton(
                 icon: const Icon(Icons.delete_outline, color: Colors.red),
-                onPressed: () => questionData.removeSubject(subject.id),
+                onPressed: () => questionData.clearSelectedSubject(),
               ),
             ],
           ),
@@ -235,8 +239,7 @@ class _GeneratePaperScreenState extends State<GeneratePaperScreen> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4),
                   child: GestureDetector(
-                    onTap: () =>
-                        questionData.updateSubjectDifficulty(subject.id, level),
+                    onTap: () => questionData.updateDifficulty(level),
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       decoration: BoxDecoration(
@@ -300,8 +303,7 @@ class _GeneratePaperScreenState extends State<GeneratePaperScreen> {
                   icon: const Icon(Icons.remove,
                       color: Color(0xFF1ABC9C), size: 20),
                   onPressed: () {
-                    questionData.updateSubjectQuestionCount(
-                        subject.id, subject.questionCount - 5);
+                    questionData.updateQuestionCount(subject.questionCount - 5);
                   },
                 ),
               ),
@@ -346,39 +348,26 @@ class _GeneratePaperScreenState extends State<GeneratePaperScreen> {
                   icon:
                       const Icon(Icons.add, color: Color(0xFF1ABC9C), size: 20),
                   onPressed: () {
-                    questionData.updateSubjectQuestionCount(
-                        subject.id, subject.questionCount + 5);
+                    questionData.updateQuestionCount(subject.questionCount + 5);
                   },
                 ),
               ),
             ],
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Checkbox(
-                  activeColor: Color(0xff36d0c2),
-                  value: subject.needOption,
-                  onChanged: (value) {
-                    questionData.checkbox(subject.id, value);
-                  }),
-              Text(
-                'Need options',
-                style:
-                    TextStyle(color: Color(0xff36d0c2), fontFamily: 'copper'),
-              )
-            ],
-          )
+
+          // Options Checkbox
         ],
       ),
     );
   }
 
-  Widget _buildAddSubjectSection(
+  /// Shown when no subject is selected yet — either the tap-to-open button,
+  /// or the full search/picker list.
+  Widget _buildSubjectPickerSection(
       BuildContext context, QuestionData questionData, proData) {
-    if (!_showSubjectInput) {
+    // Button state — picker is closed
+    if (!_showSubjectPicker) {
       return Container(
-        margin: const EdgeInsets.only(top: 12),
         decoration: BoxDecoration(
           color: Colors.transparent,
           border: Border.all(color: Color(0xff36d0c2)),
@@ -396,7 +385,7 @@ class _GeneratePaperScreenState extends State<GeneratePaperScreen> {
           child: InkWell(
             onTap: () {
               setState(() {
-                _showSubjectInput = true;
+                _showSubjectPicker = true;
               });
               Future.delayed(const Duration(milliseconds: 100), () {
                 _searchFocusNode.requestFocus();
@@ -410,9 +399,9 @@ class _GeneratePaperScreenState extends State<GeneratePaperScreen> {
                 children: [
                   const Icon(Icons.add, color: Color(0xFF1ABC9C)),
                   const SizedBox(width: 8),
-                  Text(
-                    'Add Subject (${questionData.selectedSubjects.length}/${questionData.maxSubjects})',
-                    style: const TextStyle(
+                  const Text(
+                    'Select a Subject',
+                    style: TextStyle(
                         color: Color(0xFF1ABC9C),
                         fontWeight: FontWeight.w600,
                         fontSize: 16,
@@ -426,8 +415,8 @@ class _GeneratePaperScreenState extends State<GeneratePaperScreen> {
       );
     }
 
+    // Picker state — search input + subject list
     return Container(
-      margin: const EdgeInsets.only(top: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.transparent,
@@ -479,114 +468,61 @@ class _GeneratePaperScreenState extends State<GeneratePaperScreen> {
             },
           ),
 
-          // Suggestions - Only show available subjects from the list
-          if (_searchController.text.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            Container(
-              constraints: const BoxConstraints(maxHeight: 200),
-              child: () {
-                final filtered =
-                    questionData.getFilteredSubjects(_searchController.text);
+          // Subject list (filtered or full)
+          const SizedBox(height: 12),
+          Container(
+            constraints: const BoxConstraints(maxHeight: 200),
+            child: () {
+              final filtered =
+                  questionData.getFilteredSubjects(_searchController.text);
 
-                if (filtered.isEmpty) {
-                  return Container(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
-                      'No matching subjects found',
-                      style: TextStyle(
-                        color: Color(0xFF7F8C8D),
-                        fontSize: 14,
-                      ),
-                      textAlign: TextAlign.center,
+              if (filtered.isEmpty) {
+                return Container(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(
+                    'No matching subjects found',
+                    style: TextStyle(
+                      color: Color(0xFF7F8C8D),
+                      fontSize: 14,
                     ),
-                  );
-                }
+                    textAlign: TextAlign.center,
+                  ),
+                );
+              }
 
-                return ListView(
-                  shrinkWrap: true,
-                  children: filtered
-                      .map((subject) => Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () {
-                                questionData.addSubject(subject);
-                                _searchController.clear();
-                                setState(() {
-                                  _showSubjectInput = false;
-                                });
-                              },
-                              borderRadius: BorderRadius.circular(10),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 12),
-                                child: Text(
-                                  subject,
-                                  style: const TextStyle(
-                                    color: Color(0xFF2C3E50),
-                                    fontSize: 15,
-                                  ),
+              return ListView(
+                shrinkWrap: true,
+                children: filtered
+                    .map((subject) => Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              questionData.selectSubject(subject);
+                              _searchController.clear();
+                              setState(() {
+                                _showSubjectPicker = false;
+                              });
+                            },
+                            borderRadius: BorderRadius.circular(10),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 12),
+                              child: Text(
+                                subject,
+                                style: TextStyle(
+                                  color: proData.darkMode
+                                      ? Colors.white
+                                      : const Color(0xFF2C3E50),
+                                  fontSize: 15,
                                 ),
                               ),
                             ),
-                          ))
-                      .toList(),
-                );
-              }(),
-            ),
-          ] else ...[
-            // Show all available subjects when search is empty
-            const SizedBox(height: 12),
-            Container(
-              constraints: const BoxConstraints(maxHeight: 200),
-              child: () {
-                final availableSubjects = questionData.getFilteredSubjects('');
-
-                if (availableSubjects.isEmpty) {
-                  return Container(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
-                      'All subjects have been added',
-                      style: TextStyle(
-                        color: Color(0xFF7F8C8D),
-                        fontSize: 14,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  );
-                }
-
-                return ListView(
-                  shrinkWrap: true,
-                  children: availableSubjects
-                      .map((subject) => Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () {
-                                questionData.addSubject(subject);
-                                _searchController.clear();
-                                setState(() {
-                                  _showSubjectInput = false;
-                                });
-                              },
-                              borderRadius: BorderRadius.circular(10),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 12),
-                                child: Text(
-                                  subject,
-                                  style: const TextStyle(
-                                    color: Color(0xFF2C3E50),
-                                    fontSize: 15,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ))
-                      .toList(),
-                );
-              }(),
-            ),
-          ],
+                          ),
+                        ))
+                    .toList(),
+              );
+            }(),
+          ),
 
           // Cancel Button
           const SizedBox(height: 12),
@@ -594,7 +530,7 @@ class _GeneratePaperScreenState extends State<GeneratePaperScreen> {
             onPressed: () {
               _searchController.clear();
               setState(() {
-                _showSubjectInput = false;
+                _showSubjectPicker = false;
               });
             },
             child: const Text(
@@ -610,69 +546,12 @@ class _GeneratePaperScreenState extends State<GeneratePaperScreen> {
     );
   }
 
-  Widget _buildSummaryCard(QuestionData questionData) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.transparent.withOpacity(0.8),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Total Questions:',
-                style: TextStyle(
-                    fontSize: 14,
-                    color: Color(0xff26a69a),
-                    fontFamily: 'copper'),
-              ),
-              Text(
-                '${questionData.totalQuestions}',
-                style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF26a69a),
-                    fontFamily: 'copper'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Subjects Added:',
-                style: TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFff26a69a),
-                    fontFamily: 'copper'),
-              ),
-              Text(
-                '${questionData.selectedSubjects.length}/${questionData.maxSubjects}',
-                style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF26a69a),
-                    fontFamily: 'copper'),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildGenerateButton(BuildContext context, QuestionData questionData) {
-    final hasSubjects = questionData.selectedSubjects.isNotEmpty;
-
     return Padding(
       padding: const EdgeInsets.all(15.0),
       child: MyButton(
           'Generate Paper',
-          hasSubjects
+          questionData.isSubjectSelected
               ? () async {
                   Provider.of<ProgressData>(context, listen: false)
                       .setLoading(1);
@@ -680,13 +559,8 @@ class _GeneratePaperScreenState extends State<GeneratePaperScreen> {
                     questionData.buildPrompt();
                     print('Generating paper...');
                     await questionData.generateFromPrompt(context);
-
-                    if (context.mounted) {
-                      Navigator.pop(context); // Close loading dialog
-                    }
                   } catch (e) {
                     if (context.mounted) {
-                      Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text('Error: ${e.toString()}'),
@@ -695,8 +569,10 @@ class _GeneratePaperScreenState extends State<GeneratePaperScreen> {
                       );
                     }
                   } finally {
-                    Provider.of<ProgressData>(context, listen: false)
-                        .setLoading(0);
+                    if (context.mounted) {
+                      Provider.of<ProgressData>(context, listen: false)
+                          .setLoading(0);
+                    }
                   }
                 }
               : null,

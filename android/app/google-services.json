@@ -7,12 +7,17 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:72439715330:android:6110274bb333168009b91b",
+        "mobilesdk_app_id": "1:72439715330:android:fd74945ea5a1d5d409b91b",
         "android_client_info": {
           "package_name": "com.ayush.paper_gen"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "72439715330-2mj71k5j6kjiqbkj9rlueie2u0tk4bdo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBB7KOPI12HCkHCWikAXCagAGs21-EHUGE"
@@ -20,7 +25,55 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "72439715330-2mj71k5j6kjiqbkj9rlueie2u0tk4bdo.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "72439715330-mphr25tlu96oq4ssgr600bqcksoal9nm.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.paperGen"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:72439715330:android:6110274bb333168009b91b",
+        "android_client_info": {
+          "package_name": "com.example.paper_gen"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "72439715330-2mj71k5j6kjiqbkj9rlueie2u0tk4bdo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBB7KOPI12HCkHCWikAXCagAGs21-EHUGE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "72439715330-2mj71k5j6kjiqbkj9rlueie2u0tk4bdo.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "72439715330-mphr25tlu96oq4ssgr600bqcksoal9nm.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.paperGen"
+              }
+            }
+          ]
         }
       }
     }

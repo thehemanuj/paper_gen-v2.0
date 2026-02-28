@@ -63,7 +63,7 @@ class MyLongBox extends StatelessWidget {
               Column(
                 children: [
                   Text(
-                    '${total == 0 ? 0 : count / total as Int}%',
+                    '${total == 0 ? 0 : (count / total * 100).round()}%',
                     style: TextStyle(
                       fontSize: 30,
                       fontWeight: FontWeight.bold,

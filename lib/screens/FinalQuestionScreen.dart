@@ -81,17 +81,6 @@ class _DisplayQuestionsScreenState extends State<DisplayQuestionsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Image.asset('images/papergen_border_up.png'),
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              "Go Back",
-              style: TextStyle(
-                color: Color(0xff36d0c2),
-                fontSize: 20.0,
-                fontFamily: 'Copper',
-              ),
-            ),
-          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -138,60 +127,60 @@ class _DisplayQuestionsScreenState extends State<DisplayQuestionsScreen> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: GridView.builder(
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        mainAxisSpacing: 10,
-                        crossAxisSpacing: 10,
-                        childAspectRatio: 2,
-                      ),
-                      itemCount: currentQuestion.options?.length ?? 0,
-                      itemBuilder: (context, index) {
-                        final option = currentQuestion.options![index];
-                        final isSelected = selectedAnswer == option ||
-                            index == attempted[currentQuestionIndex];
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: GridView.builder(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: 10,
+                          crossAxisSpacing: 10,
+                          childAspectRatio: 2,
+                        ),
+                        itemCount: currentQuestion.options?.length ?? 0,
+                        itemBuilder: (context, index) {
+                          final option = currentQuestion.options![index];
+                          final isSelected = selectedAnswer == option ||
+                              index == attempted[currentQuestionIndex];
 
-                        return InkWell(
-                          overlayColor:
-                              WidgetStatePropertyAll(Colors.transparent),
-                          onTap: () {
-                            setState(() {
-                              selectedAnswer = option;
-                              showExplanation = false;
-                              Provider.of<QuestionData>(context, listen: false)
-                                  .setAttempted(currentQuestionIndex, index);
-                            });
-                          },
-                          child: Container(
-                            padding: EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              border: Border.all(
+                          return InkWell(
+                            overlayColor:
+                                WidgetStatePropertyAll(Colors.transparent),
+                            onTap: () {
+                              setState(() {
+                                selectedAnswer = option;
+                                showExplanation = false;
+                                Provider.of<QuestionData>(context,
+                                        listen: false)
+                                    .setAttempted(currentQuestionIndex, index);
+                              });
+                            },
+                            child: Container(
+                              padding: EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: isSelected
+                                      ? Color(0xff26a69a)
+                                      : Colors.grey,
+                                  width: isSelected ? 4 : 1,
+                                ),
+                                borderRadius: BorderRadius.circular(200),
                                 color: isSelected
-                                    ? Color(0xff26a69a)
-                                    : Colors.grey,
-                                width: isSelected ? 4 : 1,
+                                    ? Color(0x3026a69a)
+                                    : Colors.transparent,
                               ),
-                              borderRadius: BorderRadius.circular(200),
-                              color: isSelected
-                                  ? Color(0x3026a69a)
-                                  : Colors.transparent,
-                            ),
-                            child: Center(
-                              child: Text(
-                                option,
-                                style:
-                                    TextStyle(color: textColor, fontSize: 16),
-                                textAlign: TextAlign.center,
+                              child: Center(
+                                child: Text(
+                                  option,
+                                  style:
+                                      TextStyle(color: textColor, fontSize: 16),
+                                  textAlign: TextAlign.center,
+                                ),
                               ),
                             ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
+                          );
+                        },
+                      )),
                   Padding(
                     padding: const EdgeInsets.all(12.0),
                     child: Container(
@@ -256,7 +245,8 @@ class _DisplayQuestionsScreenState extends State<DisplayQuestionsScreen> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.all(12.0),
+                    padding: const EdgeInsets.only(
+                        left: 12.0, bottom: 50.0, top: 12.0, right: 12.0),
                     child: MyButton("Submit", () {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text("Submit pressed")),

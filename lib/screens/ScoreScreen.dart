@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:paper_gen/ProviderData/ProgressData.dart';
 import 'package:paper_gen/ProviderData/QuestionData.dart';
+import 'package:paper_gen/assets/Button.dart';
 import 'package:provider/provider.dart';
 
 class ScoreScreen extends StatelessWidget {
@@ -60,87 +61,95 @@ class ScoreScreen extends StatelessWidget {
                           TableRow(children: [
                             MyText(
                               "Correct",
-                              25.0,
+                              22.0,
                               textColor,
                               'left',
                             ),
                             MyText(
-                                "${qd.correctLocal}", 25.0, textColor, 'right'),
+                                "${qd.correctLocal}", 22.0, textColor, 'right'),
                           ]),
                           TableRow(children: [
                             MyText(
                               "Attempted",
-                              25.0,
+                              22.0,
                               textColor,
                               'left',
                             ),
-                            MyText("${qd.attempted.length}", 25.0, textColor,
+                            MyText("${qd.attempted.length}", 22.0, textColor,
                                 'right'),
                           ]),
                           TableRow(children: [
                             MyText(
                               "Viewed",
-                              25.0,
+                              22.0,
                               textColor,
                               'left',
                             ),
-                            MyText("${qd.viewed.length}", 25.0, textColor,
+                            MyText("${qd.viewed.length}", 22.0, textColor,
                                 'right'),
                           ]),
                           TableRow(children: [
                             MyText(
                               "Accuracy",
-                              25.0,
+                              22.0,
                               textColor,
                               'left',
                             ),
                             MyText(
                                 "${(qd.correctLocal / qd.attempted.length * 100).toStringAsFixed(2)}%",
-                                25.0,
+                                22.0,
                                 textColor,
                                 'right'),
                           ]),
                           TableRow(children: [
                             MyText(
                               "Score",
-                              25.0,
+                              22.0,
                               textColor,
                               'left',
                             ),
                             MyText(
                                 "${qd.correctLocal}/${qd.currentGeneratedPaper?.subjects[0].questions.length}",
-                                25.0,
+                                22.0,
                                 textColor,
                                 'right'),
                           ]),
                           TableRow(children: [
                             MyText(
                               "Lifetime Correct",
-                              25.0,
+                              22.0,
                               textColor,
                               'left',
                             ),
-                            MyText("${qd.totalQuestionsCorrect}", 25.0,
+                            MyText("${qd.totalQuestionsCorrect}", 22.0,
                                 textColor, 'right'),
                           ]),
                           TableRow(children: [
                             MyText(
                               "Lifetime Accuracy",
-                              25.0,
+                              22.0,
                               textColor,
                               'left',
                             ),
                             MyText(
                                 "${(qd.totalQuestionsCorrect / qd.totalQuestionsAttempted * 100).toStringAsFixed(2)}%",
-                                25.0,
+                                22.0,
                                 textColor,
                                 'right'),
                           ]),
                         ],
                       ),
-                    )
+                    ),
                   ],
                 ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: MyButton("End Assessment", () {
+                  qd.saveMetricsToFirebase(context);
+                  qd.resetData();
+                  Navigator.pop(context);
+                }, 1),
               )
             ],
           ),

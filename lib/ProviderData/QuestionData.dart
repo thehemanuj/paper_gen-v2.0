@@ -480,8 +480,9 @@ class QuestionData extends ChangeNotifier {
 
     buffer.writeln("\nRules:");
     buffer.writeln("• Return ONLY JSON array [...]");
-    buffer.writeln("• NO markdown/backticks");
     buffer.writeln("• Use ' not \" inside text");
+    buffer.writeln("• Produce exactly 4 options");
+    buffer.writeln("• NO markdown/backticks");
     buffer.writeln("• Math: x² √2 π ½ sin(x) - NO LaTeX/backslashes");
     buffer.writeln("• Brief explanations (1-2 lines)");
 

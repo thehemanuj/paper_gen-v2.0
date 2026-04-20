@@ -7,8 +7,8 @@ import 'package:paper_gen/assets/MyPreferenceBox.dart';
 import 'package:paper_gen/assets/MySelector.dart';
 import 'package:provider/provider.dart';
 
-import '../ProviderData/ProgressData.dart';
-import '../assets/MyContainer.dart';
+import '../../ProviderData/ProgressData.dart';
+import '../../assets/MyContainer.dart';
 
 class SettingScreen extends StatelessWidget {
   const SettingScreen({super.key});

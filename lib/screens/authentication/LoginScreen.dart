@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:paper_gen/assets/Button.dart';
 import 'package:paper_gen/assets/TextField.dart';
-import 'package:paper_gen/screens/RegistrationScreen.dart';
+import 'package:paper_gen/screens/authentication/RegistrationScreen.dart';
 import 'package:provider/provider.dart';
 
-import '../ProviderData/AuthorisationData.dart';
-import '../ProviderData/ProgressData.dart';
+import '../../ProviderData/AuthorisationData.dart';
+import '../../ProviderData/ProgressData.dart';
 
 class AuthorisationScreen extends StatelessWidget {
   const AuthorisationScreen({super.key});

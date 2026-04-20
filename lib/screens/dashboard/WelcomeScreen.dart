@@ -6,11 +6,14 @@ import 'package:paper_gen/ProviderData/ProgressData.dart';
 import 'package:paper_gen/assets/Button.dart';
 import 'package:paper_gen/assets/MyBox.dart';
 import 'package:paper_gen/assets/MyLongBox.dart';
-import 'package:paper_gen/screens/GenerateAPaperScreen.dart';
-import 'package:paper_gen/screens/SettingScreen.dart';
+import 'package:paper_gen/screens/assessment/GenerateAPaperScreen.dart';
+import 'package:paper_gen/screens/dashboard/learn_section.dart';
+import 'package:paper_gen/screens/past_paper/PastPapersScreen.dart';
+import 'package:paper_gen/screens/authentication/ScoreScreen.dart';
+import 'package:paper_gen/screens/dashboard/SettingScreen.dart';
 import 'package:provider/provider.dart';
 
-import '../ProviderData/QuestionData.dart';
+import '../../ProviderData/QuestionData.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -29,14 +32,12 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   }
 
   Future<void> _loadData() async {
-    // Wait for the first frame to be built
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
 
       final authData = Provider.of<AuthorisationData>(context, listen: false);
       final qData = Provider.of<QuestionData>(context, listen: false);
 
-      // Only load if user is logged in and data hasn't been loaded yet
       if (authData.email.isNotEmpty &&
           authData.rememberedData &&
           !qData.isDataLoaded) {
@@ -55,7 +56,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   Widget build(BuildContext context) {
     return Consumer3<AuthorisationData, ProgressData, QuestionData>(
       builder: (BuildContext context, authData, proData, qData, Widget? child) {
-        // Show loading indicator while initializing
         if (!_isInitialized ||
             (authData.email.isNotEmpty &&
                 authData.rememberedData &&
@@ -125,8 +125,27 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                             fontSize: 15.0,
                           ),
                         ),
-                        SizedBox(height: 30),
+                        SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Icon(Icons.monetization_on,
+                                color: Colors.amber, size: 20),
+                            SizedBox(width: 5),
+                            Text(
+                              '${qData.coins} Coins',
+                              style: TextStyle(
+                                  color: proData.darkMode
+                                      ? Colors.white
+                                      : Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 20),
                         MyButton('Generate A Paper', () {
+                          Provider.of<QuestionData>(context, listen: false)
+                              .setTimerEnabled(false);
                           Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -136,12 +155,26 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                         Row(
                           children: [
                             MyBox(FontAwesomeIcons.clock, 'Past Papers',
-                                '${qData.pastPapers.length} Papers', () {}),
+                                '${qData.pastPapers.length} Papers', () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          PastPapersScreen()));
+                            }),
                             SizedBox(
                               width: 10.0,
                             ),
                             MyBox(FontAwesomeIcons.bookOpen, 'Practice Mode',
-                                'Quick And Fast', () {}),
+                                'Quick And Fast', () {
+                              Provider.of<QuestionData>(context, listen: false)
+                                  .setTimerEnabled(true);
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          GeneratePaperScreen()));
+                            }),
                           ],
                         ),
                         SizedBox(height: 30.0),
@@ -163,11 +196,17 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                             qData.totalQuestionsCorrect,
                             qData.totalQuestionsAttempted,
                             qData.subjectsAttempted.length,
-                            1,
-                            () {}),
+                            1, () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => ScoreScreen(1)));
+                        }),
                         SizedBox(
                           height: 30.0,
                         ),
+                        LearnSection(),
+                        SizedBox(height: 30.0),
                         Text(
                           'Quick Access',
                           style: TextStyle(
@@ -187,6 +226,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                               children: [
                                 MyBox(FontAwesomeIcons.calculator,
                                     "Mathematics", '', () {
+                                  Provider.of<QuestionData>(context,
+                                          listen: false)
+                                      .setTimerEnabled(false);
                                   qData.selectSubject('Mathematics');
                                   Navigator.push(
                                       context,
@@ -202,6 +244,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                 ),
                                 MyBox(FontAwesomeIcons.earthAsia,
                                     "General Knowledge", '', () {
+                                  Provider.of<QuestionData>(context,
+                                          listen: false)
+                                      .setTimerEnabled(false);
                                   qData.selectSubject('General Knowledge');
                                   Navigator.push(
                                       context,
@@ -217,6 +262,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                   'Aptitude & Reasoning',
                                   '',
                                   () {
+                                    Provider.of<QuestionData>(context,
+                                            listen: false)
+                                        .setTimerEnabled(false);
                                     qData.selectSubject('Aptitude&Reasoning');
                                     Navigator.push(
                                         context,
@@ -241,6 +289,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                   "English",
                                   '',
                                   () {
+                                    Provider.of<QuestionData>(context,
+                                            listen: false)
+                                        .setTimerEnabled(false);
                                     qData.selectSubject('English');
                                     Navigator.push(
                                         context,
@@ -255,13 +306,16 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                 ),
                                 MyBox(FontAwesomeIcons.computer,
                                     "Computer Science", '', () {
+                                  Provider.of<QuestionData>(context,
+                                          listen: false)
+                                      .setTimerEnabled(false);
                                   qData.selectSubject('Computer Science');
                                   Navigator.push(
                                       context,
                                       MaterialPageRoute(
                                           builder: (context) =>
                                               GeneratePaperScreen()));
-                                }, color: Colors.grey),
+                                }, color: Colors.blueGrey),
                                 SizedBox(
                                   width: 10.0,
                                 ),
@@ -270,6 +324,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                   'DSA',
                                   '',
                                   () {
+                                    Provider.of<QuestionData>(context,
+                                            listen: false)
+                                        .setTimerEnabled(false);
                                     qData.selectSubject('DSA');
                                     Navigator.push(
                                         context,
@@ -277,7 +334,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                             builder: (context) =>
                                                 GeneratePaperScreen()));
                                   },
-                                  color: Colors.red,
+                                  color: Colors.grey,
                                 ),
                                 SizedBox(
                                   width: 10.0,

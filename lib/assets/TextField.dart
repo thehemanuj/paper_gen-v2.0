@@ -14,7 +14,7 @@ class MyTextField extends StatefulWidget {
 }
 
 class _MyTextFieldState extends State<MyTextField> {
-  late bool obscureText;
+  bool obscureText = false;
 
   @override
   void initState() {

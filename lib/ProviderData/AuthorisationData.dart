@@ -3,10 +3,11 @@ import 'package:email_validator/email_validator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:paper_gen/screens/WelcomeScreen.dart';
+import 'package:paper_gen/screens/assessment/DesiredExam.dart';
+import 'package:paper_gen/screens/dashboard/WelcomeScreen.dart';
 import 'package:provider/provider.dart';
 import 'package:paper_gen/ProviderData/ProgressData.dart';
-import '../screens/LoginScreen.dart';
+import '../screens/authentication/LoginScreen.dart';
 import 'QuestionData.dart';
 
 class AuthorisationData extends ChangeNotifier {
@@ -219,7 +220,7 @@ class AuthorisationData extends ChangeNotifier {
       case 'invalid-credential':
         return 'Invalid email or password';
       default:
-        return 'Authentication failed. Please try again.';
+        return 'Authentication failed. Please try again or Check your internet connection.';
     }
   }
 
@@ -252,6 +253,8 @@ class AuthorisationData extends ChangeNotifier {
       if (context.mounted) {
         await Provider.of<QuestionData>(context, listen: false)
             .getFirebaseDatabase(context);
+        await Provider.of<QuestionData>(context, listen: false)
+            .fetchSelectedSubject(context);
       }
 
       if (_remember && _isInitialised) {
@@ -264,14 +267,13 @@ class AuthorisationData extends ChangeNotifier {
 
       if (!context.mounted) return;
       Provider.of<ProgressData>(context, listen: false).setLoading(0);
-
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => WelcomeScreen()),
       );
 
       _showSnackBar(context, 'Login successful!', const Color(0xff26a69a));
-
+      clearAllControllers();
       clearSensitiveData();
     } on FirebaseAuthException catch (e) {
       if (!context.mounted) return;
@@ -325,7 +327,7 @@ class AuthorisationData extends ChangeNotifier {
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => WelcomeScreen()),
+          MaterialPageRoute(builder: (context) => AskPaperScreen()),
         );
 
         _showSnackBar(

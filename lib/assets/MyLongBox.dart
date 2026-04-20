@@ -124,14 +124,14 @@ class MyLongBox extends StatelessWidget {
                     size: 18,
                   ),
                   SizedBox(width: 6),
-                  Text(
-                    '${metrics >= 0 ? '+' : '-'} ${metrics}% this week',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: darkMode ? Colors.white54 : Colors.black54,
-                    ),
-                  ),
+                  // Text(
+                  //   '${metrics >= 0 ? '+' : '-'} ${metrics}% this week',
+                  //   style: TextStyle(
+                  //     fontSize: 14,
+                  //     fontWeight: FontWeight.w600,
+                  //     color: darkMode ? Colors.white54 : Colors.black54,
+                  //   ),
+                  // ),
                 ],
               ),
               GestureDetector(

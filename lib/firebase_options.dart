@@ -41,50 +41,51 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyCn8pG2e3h9N3Hm3L5icUqJjKmzc2RLSmo',
-    appId: '1:72439715330:web:ae9f0050e7b38c0409b91b',
-    messagingSenderId: '72439715330',
-    projectId: 'paper-gen-97dfd',
-    authDomain: 'paper-gen-97dfd.firebaseapp.com',
-    storageBucket: 'paper-gen-97dfd.firebasestorage.app',
-    measurementId: 'G-M1DWGSDWCG',
+    apiKey: 'AIzaSyDf1DT8oL7UfoJMidy0v8XNfX65M578q5M',
+    appId: '1:675588274949:web:3d0daf67ae51b54290156c',
+    messagingSenderId: '675588274949',
+    projectId: 'paper-gen-app-ca4fb',
+    authDomain: 'paper-gen-app-ca4fb.firebaseapp.com',
+    storageBucket: 'paper-gen-app-ca4fb.firebasestorage.app',
+    measurementId: 'G-76JE41E5P8',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBB7KOPI12HCkHCWikAXCagAGs21-EHUGE',
-    appId: '1:72439715330:android:fd74945ea5a1d5d409b91b',
-    messagingSenderId: '72439715330',
-    projectId: 'paper-gen-97dfd',
-    storageBucket: 'paper-gen-97dfd.firebasestorage.app',
+    apiKey: 'AIzaSyB45GZOOPDk12lq3cw9KUomNCwNWoqujx4',
+    appId: '1:675588274949:android:389ebcb03344896390156c',
+    messagingSenderId: '675588274949',
+    projectId: 'paper-gen-app-ca4fb',
+    storageBucket: 'paper-gen-app-ca4fb.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCDCEc7x5YbLXkbqi4KkBbBbpBKxrUG00U',
-    appId: '1:72439715330:ios:8120997b3549fc0609b91b',
-    messagingSenderId: '72439715330',
-    projectId: 'paper-gen-97dfd',
-    storageBucket: 'paper-gen-97dfd.firebasestorage.app',
-    iosClientId: '72439715330-mphr25tlu96oq4ssgr600bqcksoal9nm.apps.googleusercontent.com',
+    apiKey: 'AIzaSyC6TrxudleeximrH3L8-zrq7z3MWeaW9h8',
+    appId: '1:675588274949:ios:54c3a22bb8f937ce90156c',
+    messagingSenderId: '675588274949',
+    projectId: 'paper-gen-app-ca4fb',
+    storageBucket: 'paper-gen-app-ca4fb.firebasestorage.app',
+    iosClientId: '675588274949-bd848pq5anhbjrfnjg3jd37hrq5np55b.apps.googleusercontent.com',
     iosBundleId: 'com.example.paperGen',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyCDCEc7x5YbLXkbqi4KkBbBbpBKxrUG00U',
-    appId: '1:72439715330:ios:8120997b3549fc0609b91b',
-    messagingSenderId: '72439715330',
-    projectId: 'paper-gen-97dfd',
-    storageBucket: 'paper-gen-97dfd.firebasestorage.app',
-    iosClientId: '72439715330-mphr25tlu96oq4ssgr600bqcksoal9nm.apps.googleusercontent.com',
+    apiKey: 'AIzaSyC6TrxudleeximrH3L8-zrq7z3MWeaW9h8',
+    appId: '1:675588274949:ios:54c3a22bb8f937ce90156c',
+    messagingSenderId: '675588274949',
+    projectId: 'paper-gen-app-ca4fb',
+    storageBucket: 'paper-gen-app-ca4fb.firebasestorage.app',
+    iosClientId: '675588274949-bd848pq5anhbjrfnjg3jd37hrq5np55b.apps.googleusercontent.com',
     iosBundleId: 'com.example.paperGen',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyCn8pG2e3h9N3Hm3L5icUqJjKmzc2RLSmo',
-    appId: '1:72439715330:web:66d0cf6a4a9e2d0f09b91b',
-    messagingSenderId: '72439715330',
-    projectId: 'paper-gen-97dfd',
-    authDomain: 'paper-gen-97dfd.firebaseapp.com',
-    storageBucket: 'paper-gen-97dfd.firebasestorage.app',
-    measurementId: 'G-RHB6N3VMVP',
+    apiKey: 'AIzaSyDf1DT8oL7UfoJMidy0v8XNfX65M578q5M',
+    appId: '1:675588274949:web:7210f4c10a7a647d90156c',
+    messagingSenderId: '675588274949',
+    projectId: 'paper-gen-app-ca4fb',
+    authDomain: 'paper-gen-app-ca4fb.firebaseapp.com',
+    storageBucket: 'paper-gen-app-ca4fb.firebasestorage.app',
+    measurementId: 'G-8RY2M0TW8S',
   );
+
 }

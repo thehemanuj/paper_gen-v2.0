@@ -6,7 +6,7 @@ import 'package:paper_gen/ProviderData/ProgressData.dart';
 import 'package:paper_gen/ProviderData/QuestionData.dart';
 import 'package:paper_gen/assets/Button.dart';
 import 'package:paper_gen/assets/TextField.dart';
-import 'package:paper_gen/screens/WelcomeScreen.dart';
+import 'package:paper_gen/screens/dashboard/WelcomeScreen.dart';
 import 'package:provider/provider.dart';
 
 class RegistrationScreen extends StatelessWidget {

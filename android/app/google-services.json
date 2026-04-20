@@ -1,77 +1,34 @@
 {
   "project_info": {
-    "project_number": "72439715330",
-    "project_id": "paper-gen-97dfd",
-    "storage_bucket": "paper-gen-97dfd.firebasestorage.app"
+    "project_number": "675588274949",
+    "project_id": "paper-gen-app-ca4fb",
+    "storage_bucket": "paper-gen-app-ca4fb.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:72439715330:android:fd74945ea5a1d5d409b91b",
+        "mobilesdk_app_id": "1:675588274949:android:389ebcb03344896390156c",
         "android_client_info": {
           "package_name": "com.ayush.paper_gen"
         }
       },
       "oauth_client": [
         {
-          "client_id": "72439715330-2mj71k5j6kjiqbkj9rlueie2u0tk4bdo.apps.googleusercontent.com",
+          "client_id": "675588274949-9ah1df4csbh0528hupuhm5io9mj4t4ma.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBB7KOPI12HCkHCWikAXCagAGs21-EHUGE"
+          "current_key": "AIzaSyB45GZOOPDk12lq3cw9KUomNCwNWoqujx4"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "72439715330-2mj71k5j6kjiqbkj9rlueie2u0tk4bdo.apps.googleusercontent.com",
+              "client_id": "675588274949-9ah1df4csbh0528hupuhm5io9mj4t4ma.apps.googleusercontent.com",
               "client_type": 3
-            },
-            {
-              "client_id": "72439715330-mphr25tlu96oq4ssgr600bqcksoal9nm.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.example.paperGen"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:72439715330:android:6110274bb333168009b91b",
-        "android_client_info": {
-          "package_name": "com.example.paper_gen"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "72439715330-2mj71k5j6kjiqbkj9rlueie2u0tk4bdo.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyBB7KOPI12HCkHCWikAXCagAGs21-EHUGE"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "72439715330-2mj71k5j6kjiqbkj9rlueie2u0tk4bdo.apps.googleusercontent.com",
-              "client_type": 3
-            },
-            {
-              "client_id": "72439715330-mphr25tlu96oq4ssgr600bqcksoal9nm.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.example.paperGen"
-              }
             }
           ]
         }

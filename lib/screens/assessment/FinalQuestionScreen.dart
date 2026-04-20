@@ -1,11 +1,12 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:paper_gen/assets/Button.dart';
-import 'package:paper_gen/screens/ScoreScreen.dart';
+import 'package:paper_gen/screens/authentication/ScoreScreen.dart';
 import 'package:provider/provider.dart';
 
-import '../ProviderData/ProgressData.dart';
-import '../ProviderData/QuestionData.dart';
-import '../assets/HelperClasses.dart';
+import '../../ProviderData/ProgressData.dart';
+import '../../ProviderData/QuestionData.dart';
+import '../../assets/HelperClasses.dart';
 
 class DisplayQuestionsScreen extends StatefulWidget {
   const DisplayQuestionsScreen({Key? key}) : super(key: key);
@@ -19,6 +20,8 @@ class _DisplayQuestionsScreenState extends State<DisplayQuestionsScreen> {
   int currentSubjectIndex = 0;
   String? selectedAnswer;
   bool showExplanation = false;
+  Timer? _timer;
+  int _remainingSeconds = 0;
 
   GeneratedPaper? _paper;
 
@@ -28,9 +31,46 @@ class _DisplayQuestionsScreenState extends State<DisplayQuestionsScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    final qData = Provider.of<QuestionData>(context, listen: false);
+    if (qData.timerEnabled) {
+      _remainingSeconds = qData.timerSeconds *
+          (qData.currentGeneratedPaper?.totalQuestions ?? 0);
+      _startTimer();
+    }
+  }
+
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_remainingSeconds > 0) {
+        setState(() {
+          _remainingSeconds--;
+        });
+      } else {
+        _timer?.cancel();
+        _checkCorrect();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  String _formatTime(int seconds) {
+    int minutes = seconds ~/ 60;
+    int remainingSeconds = seconds % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
+  }
+
+  @override
   Widget build(BuildContext context) {
     final darkMode = Provider.of<ProgressData>(context).darkMode;
     final textColor = darkMode ? Colors.white : Colors.black;
+    final qData = Provider.of<QuestionData>(context);
 
     _paper = _getPaper();
 
@@ -60,8 +100,7 @@ class _DisplayQuestionsScreenState extends State<DisplayQuestionsScreen> {
     final currentSubject = _paper!.subjects[currentSubjectIndex];
     final currentQuestion = currentSubject.questions[currentQuestionIndex];
     final totalInSubject = currentSubject.questions.length;
-    final attempted =
-        Provider.of<QuestionData>(context, listen: false).attempted;
+    final attempted = qData.attempted;
 
     return Scaffold(
       backgroundColor: darkMode ? Color(0xff0A0E27) : Color(0xffFDFBF7),
@@ -81,12 +120,12 @@ class _DisplayQuestionsScreenState extends State<DisplayQuestionsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Image.asset('images/papergen_border_up.png'),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Text(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
                   '${currentSubject.subject} - ${currentSubject.difficulty}',
                   style: TextStyle(
                     fontSize: 18,
@@ -95,19 +134,42 @@ class _DisplayQuestionsScreenState extends State<DisplayQuestionsScreen> {
                     fontFamily: 'Copper',
                   ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                child: Text(
-                  'Q ${currentQuestionIndex + 1}/$totalInSubject',
-                  style: TextStyle(
-                    color: textColor,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                if (qData.timerEnabled)
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Color(0xff26a69a).withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(15),
+                      border: Border.all(color: Color(0xff26a69a)),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.timer, color: Color(0xff26a69a), size: 18),
+                        SizedBox(width: 5),
+                        Text(
+                          _formatTime(_remainingSeconds),
+                          style: TextStyle(
+                            color: textColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
+            child: Text(
+              'Q ${currentQuestionIndex + 1}/$totalInSubject',
+              style: TextStyle(
+                color: textColor,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
               ),
-            ],
+            ),
           ),
           Expanded(
             child: SingleChildScrollView(
@@ -204,8 +266,23 @@ class _DisplayQuestionsScreenState extends State<DisplayQuestionsScreen> {
                             childrenPadding: EdgeInsets.all(16),
                             backgroundColor: Colors.transparent,
                             collapsedBackgroundColor: Colors.transparent,
+                            onExpansionChanged: (isExpanded) {
+                              if (isExpanded) {
+                                bool deducted = Provider.of<QuestionData>(
+                                        context,
+                                        listen: false)
+                                    .deductCoins(10);
+                                if (!deducted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                        content: Text(
+                                            "Not enough coins to view solution!")),
+                                  );
+                                }
+                              }
+                            },
                             title: Text(
-                              'Solution',
+                              'Solution (Costs 10 Coins)',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
@@ -248,10 +325,7 @@ class _DisplayQuestionsScreenState extends State<DisplayQuestionsScreen> {
                     padding: const EdgeInsets.only(
                         left: 12.0, bottom: 50.0, top: 12.0, right: 12.0),
                     child: MyButton("Submit", () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Submit pressed")),
-                      );
-                      _checkCorrect(); // Fix: was missing ()
+                      _checkCorrect();
                     }, 1.0),
                   ),
                 ],
@@ -310,23 +384,23 @@ class _DisplayQuestionsScreenState extends State<DisplayQuestionsScreen> {
   }
 
   void _checkCorrect() {
-    // Fix: all Provider.of calls must have listen: false outside of build()
+    _timer?.cancel();
     final provider = Provider.of<QuestionData>(context, listen: false);
     final attempted = provider.attempted;
 
     attempted.forEach((key, value) {
       final question = _paper!.subjects[currentSubjectIndex].questions[key];
       if (question.answer == question.options?[value]) {
-        provider.setCorrect(); // reuse same provider reference
+        provider.setCorrect();
       } else {
         provider.setTotalQuestionsIncorrect();
       }
     });
-    Provider.of<QuestionData>(context, listen: false)
-        .saveMetricsToFirebase(context);
+
+    provider.saveMetricsToFirebase(context);
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => ScoreScreen()),
+      MaterialPageRoute(builder: (context) => ScoreScreen(0)),
     );
   }
 }

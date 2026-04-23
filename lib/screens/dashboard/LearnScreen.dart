@@ -31,7 +31,6 @@ class _LearnScreenState extends State<LearnScreen>
 
     // Pre-select user's exam
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final proData = Provider.of<ProgressData>(context, listen: false);
       final qData = Provider.of<QuestionData>(context, listen: false);
       final userExam = qData.selectedExam ?? '';
       if (qData.availableSubjectsWithLinks.containsKey(userExam)) {
@@ -51,8 +50,11 @@ class _LearnScreenState extends State<LearnScreen>
   }
 
   void _playVideo(String videoId, String title, String exam) {
-    if (videoId.isEmpty || _activeVideoId == videoId) return;
-    _playerController?.dispose();
+    if (videoId.isEmpty) return;
+    if (_activeVideoId == videoId && _playerController != null) return;
+
+    final oldController = _playerController;
+
     setState(() {
       _activeVideoId = videoId;
       _activeTitle = title;
@@ -62,6 +64,13 @@ class _LearnScreenState extends State<LearnScreen>
         flags: const YoutubePlayerFlags(autoPlay: true, mute: false),
       );
     });
+
+    // Dispose the old controller after the next frame to avoid "used after disposed" errors
+    if (oldController != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        oldController.dispose();
+      });
+    }
   }
 
   @override
@@ -178,6 +187,7 @@ class _LearnScreenState extends State<LearnScreen>
         if (_playerController != null) ...[
           const SizedBox(height: 4),
           YoutubePlayer(
+            key: ValueKey(_activeVideoId),
             controller: _playerController!,
             showVideoProgressIndicator: true,
             progressIndicatorColor: const Color(0xff26a69a),

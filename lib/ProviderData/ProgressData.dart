@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
+import '../assets/NotificationService.dart';
 
 class ProgressData extends ChangeNotifier {
   ProgressData() {
@@ -20,14 +21,21 @@ class ProgressData extends ChangeNotifier {
   }
 
   void fetchBoxData() {
-    if (box.isNotEmpty && box.containsKey('userLoggedIn')) {
-      _darkMode = box.get('userLoggedIn');
-      notifyListeners();
+    if (box.isNotEmpty) {
+      if (box.containsKey('userLoggedIn')) {
+        _userLoggedIn = box.get('userLoggedIn');
+      }
+      if (box.containsKey('darkMode')) {
+        _darkMode = box.get('darkMode');
+      }
+      if (box.containsKey('notificationsEnabled')) {
+        _notificationsEnabled = box.get('notificationsEnabled');
+        if (_notificationsEnabled) {
+          NotificationService().scheduleDailyNotification();
+        }
+      }
     }
-    if (box.isNotEmpty && box.containsKey('darkMode')) {
-      _darkMode = box.get('darkMode');
-      notifyListeners();
-    }
+    notifyListeners();
   }
 
   Future<void> putData(String key, dynamic value) async {
@@ -62,8 +70,14 @@ class ProgressData extends ChangeNotifier {
 
   bool _notificationsEnabled = false;
   bool get notificationsEnabled => _notificationsEnabled;
-  setNotificationsEnabled(value) {
+  setNotificationsEnabled(bool value) async {
     _notificationsEnabled = value;
+    await putData('notificationsEnabled', _notificationsEnabled);
+    if (_notificationsEnabled) {
+      await NotificationService().scheduleDailyNotification();
+    } else {
+      await NotificationService().cancelNotifications();
+    }
     notifyListeners();
   }
 }

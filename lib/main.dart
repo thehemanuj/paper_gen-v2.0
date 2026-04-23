@@ -11,6 +11,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'ProviderData/ProgressData.dart';
 import 'firebase_options.dart';
 import 'ProviderData/QuestionData.dart';
+import 'assets/NotificationService.dart';
 
 void main() async {
   await Hive.initFlutter();
@@ -18,6 +19,8 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  await NotificationService().init();
 
   runApp(const MyApp());
 }

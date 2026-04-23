@@ -4,6 +4,7 @@ import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:paper_gen/ProviderData/AuthorisationData.dart';
 import 'package:paper_gen/ProviderData/ProgressData.dart';
 import 'package:paper_gen/assets/Button.dart';
+import 'package:paper_gen/assets/ProgressInsights.dart';
 import 'package:paper_gen/assets/MyBox.dart';
 import 'package:paper_gen/assets/MyLongBox.dart';
 import 'package:paper_gen/screens/assessment/GenerateAPaperScreen.dart';
@@ -11,6 +12,7 @@ import 'package:paper_gen/screens/dashboard/learn_section.dart';
 import 'package:paper_gen/screens/past_paper/PastPapersScreen.dart';
 import 'package:paper_gen/screens/authentication/ScoreScreen.dart';
 import 'package:paper_gen/screens/dashboard/SettingScreen.dart';
+import 'package:paper_gen/screens/assessment/ReviewQuestionsScreen.dart';
 import 'package:provider/provider.dart';
 
 import '../../ProviderData/QuestionData.dart';
@@ -56,6 +58,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   Widget build(BuildContext context) {
     return Consumer3<AuthorisationData, ProgressData, QuestionData>(
       builder: (BuildContext context, authData, proData, qData, Widget? child) {
+        final darkMode = proData.darkMode;
+        final textColor = darkMode ? Color(0xffFDFBF7) : Color(0xff0A0E27);
         if (!_isInitialized ||
             (authData.email.isNotEmpty &&
                 authData.rememberedData &&
@@ -191,17 +195,74 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                         SizedBox(
                           height: 10.0,
                         ),
-                        MyLongBox(
-                            qData.pastPapers.length,
-                            qData.totalQuestionsCorrect,
-                            qData.totalQuestionsAttempted,
-                            qData.subjectsAttempted.length,
-                            1, () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => ScoreScreen(1)));
-                        }),
+                        const ProgressInsights(),
+                        const SizedBox(height: 10),
+                        Center(
+                          child: MyButton("Full Progress Report 📊", () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => ScoreScreen(1)));
+                          }, 1),
+                        ),
+                        if (qData.pastPapers.isNotEmpty) ...[
+                          const SizedBox(height: 30.0),
+                          Text(
+                            'Recent Practice',
+                            style: TextStyle(
+                              color: textColor,
+                              fontSize: 18.0,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Copper',
+                            ),
+                          ),
+                          const SizedBox(height: 10.0),
+                          Container(
+                            padding: const EdgeInsets.all(15),
+                            decoration: BoxDecoration(
+                              color: darkMode ? const Color(0xff1A1F38) : Colors.white,
+                              borderRadius: BorderRadius.circular(15),
+                              border: Border.all(color: const Color(0xff26A69A).withOpacity(0.3)),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.assignment_turned_in, color: Color(0xff26A69A), size: 30),
+                                const SizedBox(width: 15),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Paper #${qData.pastPapers.last.id != "" ? qData.pastPapers.last.id.substring(0, 5) : "Recent"}',
+                                        style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+                                      ),
+                                      Text(
+                                        'Attempted ${qData.pastPapers.last.createdAt.toString().split(' ')[0]}',
+                                        style: TextStyle(color: textColor.withOpacity(0.5), fontSize: 12),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    final paper = qData.pastPapers.last;
+                                    final answers = qData.paperHistoryAnswers[paper.id] ?? {};
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => ReviewQuestionsScreen(
+                                          paperOverride: paper,
+                                          answersOverride: answers,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  child: const Text('REVIEW', style: TextStyle(color: Color(0xff26A69A), fontWeight: FontWeight.bold)),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                         SizedBox(
                           height: 30.0,
                         ),

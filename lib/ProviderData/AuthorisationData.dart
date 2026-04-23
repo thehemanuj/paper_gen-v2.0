@@ -52,6 +52,7 @@ class AuthorisationData extends ChangeNotifier {
   String get enteredAnswer => _enteredAnswer;
   bool get remember => _remember;
   bool get rememberedData => _rememberedData;
+  bool get isInitialised => _isInitialised;
   int get registrationValue => _registrationValue;
 
   void setUsername(String text) {
@@ -123,22 +124,29 @@ class AuthorisationData extends ChangeNotifier {
   }
 
   void fetchBoxData() {
-    if (!_isInitialised || box.isEmpty) return;
+    if (!_isInitialised) return;
 
     try {
-      if (box.containsKey('remember')) {
-        _rememberedData = box.get('remember', defaultValue: false);
-        if (!_rememberedData) {
-          box.clear();
-          notifyListeners();
-          return;
+      // First priority: Check if we have remembered data in local storage
+      if (box.isNotEmpty && box.get('remember', defaultValue: false) == true) {
+        _rememberedData = true;
+        _username = box.get('username', defaultValue: '');
+        _email = box.get('email', defaultValue: '');
+        _fn = box.get('fn', defaultValue: '');
+        _ln = box.get('ln', defaultValue: '');
+      } 
+      // Second priority: If no local data, check if Firebase still has an active session
+      else {
+        final currentUser = FirebaseAuth.instance.currentUser;
+        if (currentUser != null) {
+          _rememberedData = true;
+          _email = currentUser.email ?? '';
+          _username = _email;
+          // Note: We might need to fetch names from Firestore, 
+          // but _rememberedData = true will at least take them to the WelcomeScreen
+          // where WelcomeScreen's internal loading logic will handle it.
         }
       }
-
-      _username = box.get('username', defaultValue: '');
-      _email = box.get('email', defaultValue: '');
-      _fn = box.get('fn', defaultValue: '');
-      _ln = box.get('ln', defaultValue: '');
       notifyListeners();
     } catch (e) {
       print('Error fetching box data: $e');

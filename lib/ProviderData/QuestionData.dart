@@ -461,6 +461,10 @@ class QuestionData extends ChangeNotifier {
   List get pastPapers => _pastPapers;
   int get correctLocal => _correctLocal;
   Map<int, int> get attempted => _attempted;
+
+  // Store user answers for past papers: PaperID -> {QuestionIndex: OptionIndex}
+  final Map<String, Map<int, int>> _paperHistoryAnswers = {};
+  Map<String, Map<int, int>> get paperHistoryAnswers => _paperHistoryAnswers;
   bool get isDataLoaded => _isDataLoaded;
   String get selectedDefaultDifficulty => _selectedDefaultDifficulty;
   String get selectedDifficulty => _selectedDifficulty;
@@ -658,6 +662,11 @@ class QuestionData extends ChangeNotifier {
   // UTILITY METHODS
   // ============================================================================
 
+  void addPastPaper(GeneratedPaper paper) {
+    _pastPapers.add(paper);
+    notifyListeners();
+  }
+
   getTime() {
     DateTime dateTime = DateTime.now();
     if (dateTime.hour <= 11 && dateTime.hour >= 5) {
@@ -849,7 +858,7 @@ class QuestionData extends ChangeNotifier {
   Future<GeneratedPaper?> generateFromPrompt(context) async {
     if (_selectedSubject == null) return null;
     try {
-      const String apiKey = "Enter your gemini key here";
+      const String apiKey = "AIzaSyDmsdovmx8M-JrEXdlnDdOFicos7cf9Fsg";
       final url = Uri.parse(
         "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey",
       );
@@ -889,6 +898,7 @@ class QuestionData extends ChangeNotifier {
             .set(paper.toJson());
       } catch (e) {}
       _currentGeneratedPaper = paper;
+      addPastPaper(paper); // Uses helper which calls notifyListeners()
       _generatedPapers.add(paper);
 
       // Award 10 coins per question generated
@@ -918,7 +928,9 @@ class QuestionData extends ChangeNotifier {
         "config": {
           "avatar": _avatar,
           "difficulty": _selectedDefaultDifficulty,
-          "role": _role
+          "role": _role,
+          "dailyStudyHours": dailyStudyHours,
+          "examDate": examDate?.toIso8601String(),
         },
         "totalQuestionsGenerated": _totalQuestionsGenerated,
         "totalQuestionsViewed": _totalQuestionsViewed,
@@ -930,7 +942,60 @@ class QuestionData extends ChangeNotifier {
         "badges": _badges,
         "coins": _coins
       });
+      
+      if (_currentGeneratedPaper != null) {
+        _paperHistoryAnswers[_currentGeneratedPaper!.id] = Map.from(_attempted);
+      }
     } catch (e) {}
+  }
+
+  Future<String?> askAIDoubt(String question, String correctAnswer,
+      String explanation, String userDoubt) async {
+    try {
+      const String apiKey = "AIzaSyDmsdovmx8M-JrEXdlnDdOFicos7cf9Fsg";
+      final url = Uri.parse(
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey",
+      );
+
+      final prompt = """
+      You are a friendly AI Study Buddy for an app called 'Paper Gen'.
+      A student has a doubt about a question.
+      
+      Question: $question
+      Correct Answer: $correctAnswer
+      Original Explanation: $explanation
+      
+      Student's Doubt: $userDoubt
+      
+      Instructions:
+      1. Explain clearly and simply.
+      2. Use bullet points if helpful.
+      3. Be encouraging.
+      4. Keep it under 150 words.
+      5. Do not use LaTeX. Use simple symbols like x^2, sqrt(x).
+      """;
+
+      final body = jsonEncode({
+        "contents": [
+          {
+            "parts": [
+              {"text": prompt}
+            ]
+          }
+        ]
+      });
+
+      final res = await http.post(url,
+          headers: {"Content-Type": "application/json"}, body: body);
+
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        return data["candidates"]?[0]?["content"]?["parts"]?[0]?["text"];
+      }
+      return "Sorry, I'm having trouble connecting to my brain right now.";
+    } catch (e) {
+      return "Error: $e";
+    }
   }
 
   Future<void> saveUserPlanToFirestore(context) async {

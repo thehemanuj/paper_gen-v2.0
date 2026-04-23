@@ -1,4 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:paper_gen/ProviderData/AuthorisationData.dart';
 import 'package:paper_gen/screens/assessment/FinalQuestionScreen.dart';
@@ -33,14 +34,34 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ProgressData())
       ],
       child: MaterialApp(
-        home: Consumer<AuthorisationData>(
-          builder: (context, authData, child) {
-            return Scaffold(
-              backgroundColor: Colors.transparent,
-              body: authData.rememberedData
-                  ? WelcomeScreen()
-                  : AuthorisationScreen(),
-            );
+        home: StreamBuilder<User?>(
+          stream: FirebaseAuth.instance.authStateChanges(),
+          builder: (context, snapshot) {
+            // 1. If Firebase is still connecting, show loading
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Scaffold(
+                backgroundColor: Color(0xff0A0E27),
+                body: Center(
+                  child: CircularProgressIndicator(color: Color(0xff26A69A)),
+                ),
+              );
+            }
+
+            // 2. Fetch our custom auth data provider
+            final authData = Provider.of<AuthorisationData>(context, listen: false);
+
+            // 3. If we have a user from Firebase, they are logged in
+            if (snapshot.hasData && snapshot.data != null) {
+              // Ensure our provider knows we are logged in for internal logic
+              if (!authData.rememberedData) {
+                // We use a small hack to update the provider without triggering a rebuild mid-stream
+                Future.microtask(() => authData.fetchBoxData());
+              }
+              return WelcomeScreen();
+            }
+
+            // 4. Otherwise, show login screen
+            return AuthorisationScreen();
           },
         ),
       ),

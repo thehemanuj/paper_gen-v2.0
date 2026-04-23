@@ -4,6 +4,7 @@ import 'package:paper_gen/assets/Button.dart';
 import 'package:paper_gen/screens/authentication/ScoreScreen.dart';
 import 'package:provider/provider.dart';
 
+import 'package:paper_gen/screens/assessment/DoubtBusterScreen.dart';
 import '../../ProviderData/ProgressData.dart';
 import '../../ProviderData/QuestionData.dart';
 import '../../assets/HelperClasses.dart';
@@ -301,6 +302,35 @@ class _DisplayQuestionsScreenState extends State<DisplayQuestionsScreen> {
                                     'No hint available',
                                 style:
                                     TextStyle(fontSize: 14, color: textColor),
+                              ),
+                              const SizedBox(height: 15),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: TextButton.icon(
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => DoubtBusterScreen(
+                                          question: currentQuestion.question,
+                                          correctAnswer:
+                                              currentQuestion.answer ?? '',
+                                          explanation:
+                                              currentQuestion.explanation ?? '',
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  icon: const Icon(Icons.rocket_launch,
+                                      color: Color(0xff26a69a)),
+                                  label: const Text(
+                                    'Ask AI Study Buddy',
+                                    style: TextStyle(
+                                      color: Color(0xff26a69a),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
                               ),
                             ],
                           ),

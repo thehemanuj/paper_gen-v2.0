@@ -615,11 +615,17 @@ class QuestionData extends ChangeNotifier {
   // SUBJECT MANAGEMENT METHODS
   // ============================================================================
 
+  String _getDifficultyByPrepLevel() {
+    if (preparationLevel == 'Beginner') return 'Hard';
+    if (preparationLevel == 'Intermediate') return 'Expert';
+    return 'Professional'; // Advanced or default
+  }
+
   void selectSubject(String subjectName) {
     _selectedSubject = SubjectConfig(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       name: subjectName,
-      difficulty: _selectedDefaultDifficulty,
+      difficulty: _getDifficultyByPrepLevel(),
       questionCount: 10,
     );
     notifyListeners();
@@ -765,6 +771,7 @@ class QuestionData extends ChangeNotifier {
 
     if (doc.exists) {
       selectedExam = doc.data()?['selectedExam'] ?? "JEE-MAINS";
+      preparationLevel = doc.data()?['preparationLevel'] ?? "Beginner";
       notifyListeners();
     }
   }
@@ -849,7 +856,7 @@ class QuestionData extends ChangeNotifier {
   Future<GeneratedPaper?> generateFromPrompt(context) async {
     if (_selectedSubject == null) return null;
     try {
-      const String apiKey = "Enter your gemini key here";
+      const String apiKey = "AIzaSyDE_vbho_yrUmysFOzzVrUT0QX9Xjs6sQM";
       final url = Uri.parse(
         "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey",
       );

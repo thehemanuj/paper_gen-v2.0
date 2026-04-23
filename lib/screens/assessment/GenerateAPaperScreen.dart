@@ -56,6 +56,8 @@ class _GeneratePaperScreenState extends State<GeneratePaperScreen> {
                 Image.asset('images/papergen_border_up.png'),
                 TextButton(
                     onPressed: () {
+                      Provider.of<ProgressData>(context, listen: false)
+                          .setLoading(0);
                       Navigator.pop(context);
                     },
                     child: Text(

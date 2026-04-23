@@ -15,6 +15,8 @@ class LearnSection extends StatefulWidget {
 class _LearnSectionState extends State<LearnSection> {
   YoutubePlayerController? _controller;
   String? _loadedVideoId;
+  String? _loadedTitle;
+  String? _loadedChannel;
 
   @override
   void dispose() {
@@ -22,15 +24,27 @@ class _LearnSectionState extends State<LearnSection> {
     super.dispose();
   }
 
-  void _loadVideo(String videoId) {
+  void _loadVideo(String videoId, String title, String channel,
+      {bool autoPlay = true}) {
     if (videoId.isEmpty || _loadedVideoId == videoId) return;
-    _controller?.dispose();
-    _loadedVideoId = videoId;
-    _controller = YoutubePlayerController(
-      initialVideoId: videoId,
-      flags: const YoutubePlayerFlags(autoPlay: false, mute: false),
-    );
-    setState(() {});
+
+    final oldController = _controller;
+
+    setState(() {
+      _loadedVideoId = videoId;
+      _loadedTitle = title;
+      _loadedChannel = channel;
+      _controller = YoutubePlayerController(
+        initialVideoId: videoId,
+        flags: YoutubePlayerFlags(autoPlay: autoPlay, mute: false),
+      );
+    });
+
+    if (oldController != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        oldController.dispose();
+      });
+    }
   }
 
   @override
@@ -44,14 +58,20 @@ class _LearnSectionState extends State<LearnSection> {
         final videos =
             exam.isNotEmpty ? qData.videosForExam(exam) : qData.allLearnVideos;
 
-        // Auto-load first video
+        // Auto-load first video if none loaded
         if (videos.isNotEmpty && _controller == null) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            _loadVideo(videos[0]['videoId'] ?? '');
+            if (_controller == null) {
+              final first = videos[0];
+              _loadVideo(
+                first['videoId'] ?? '',
+                first['title'] ?? '',
+                first['channelName'] ?? '',
+                autoPlay: false,
+              );
+            }
           });
         }
-
-        final featured = videos.isNotEmpty ? videos[0] : null;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -106,6 +126,7 @@ class _LearnSectionState extends State<LearnSection> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(14),
                 child: YoutubePlayer(
+                  key: ValueKey(_loadedVideoId),
                   controller: _controller!,
                   showVideoProgressIndicator: true,
                   progressIndicatorColor: const Color(0xff26a69a),
@@ -133,10 +154,10 @@ class _LearnSectionState extends State<LearnSection> {
                 ),
               ),
 
-            if (featured != null) ...[
+            if (_loadedTitle != null) ...[
               const SizedBox(height: 8),
               Text(
-                featured['title'] ?? '',
+                _loadedTitle!,
                 style: TextStyle(
                   fontFamily: 'Copper',
                   color: darkMode
@@ -146,7 +167,7 @@ class _LearnSectionState extends State<LearnSection> {
                 ),
               ),
               Text(
-                featured['channelName'] ?? '',
+                _loadedChannel ?? '',
                 style:
                     const TextStyle(color: Color(0xff26a69a), fontSize: 12.0),
               ),
@@ -167,7 +188,11 @@ class _LearnSectionState extends State<LearnSection> {
                     final isActive = _loadedVideoId == videoId;
 
                     return GestureDetector(
-                      onTap: () => _loadVideo(videoId),
+                      onTap: () => _loadVideo(
+                        videoId,
+                        item['title'] ?? '',
+                        item['channelName'] ?? '',
+                      ),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
                         width: 160,

@@ -34,16 +34,27 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   }
 
   Future<void> _loadData() async {
+    // Already started loading?
+    if (_isInitialized && !context.mounted) return;
+
+    print('--- [WelcomeScreen] _loadData() triggered ---');
+    
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
 
       final authData = Provider.of<AuthorisationData>(context, listen: false);
       final qData = Provider.of<QuestionData>(context, listen: false);
 
+      print('--- [WelcomeScreen] Checking if needs Firebase fetch: email=${authData.email}, remembered=${authData.rememberedData}, loaded=${qData.isDataLoaded} ---');
+
       if (authData.email.isNotEmpty &&
           authData.rememberedData &&
           !qData.isDataLoaded) {
+        print('--- [WelcomeScreen] STARTING Firebase database fetch ---');
         await qData.getFirebaseDatabase(context);
+        print('--- [WelcomeScreen] FINISHED Firebase database fetch ---');
+      } else {
+        print('--- [WelcomeScreen] Skipping Firebase fetch (either no email or already loaded) ---');
       }
 
       if (mounted) {
@@ -60,10 +71,24 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       builder: (BuildContext context, authData, proData, qData, Widget? child) {
         final darkMode = proData.darkMode;
         final textColor = darkMode ? Color(0xffFDFBF7) : Color(0xff0A0E27);
-        if (!_isInitialized ||
-            (authData.email.isNotEmpty &&
-                authData.rememberedData &&
-                !qData.isDataLoaded)) {
+        
+        bool needsDataFetch = authData.email.isNotEmpty &&
+                             authData.rememberedData &&
+                             !qData.isDataLoaded;
+
+        // If we found out we need to fetch data but Haven't initialized or done it yet, trigger it
+        if (!_isInitialized || (needsDataFetch && proData.loading == 0)) {
+           // Small delay to avoid triggering during build if not from postFrame
+           if (!_isInitialized) {
+             // Already triggered by initState
+           } else {
+             print('--- [WelcomeScreen] Late fetch trigger in build ---');
+             _loadData();
+           }
+        }
+
+        if (!_isInitialized || needsDataFetch) {
+          print('--- [WelcomeScreen] Showing Loading Screen (Init: $_isInitialized, NeedsFetch: $needsDataFetch) ---');
           return Scaffold(
             backgroundColor:
                 proData.darkMode ? Color(0xff0A0E27) : Color(0xffFDFBF7),
@@ -74,6 +99,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             ),
           );
         }
+
 
         return ModalProgressHUD(
           inAsyncCall: proData.loading == 1,

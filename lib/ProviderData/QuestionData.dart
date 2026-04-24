@@ -865,7 +865,7 @@ class QuestionData extends ChangeNotifier {
   Future<GeneratedPaper?> generateFromPrompt(context) async {
     if (_selectedSubject == null) return null;
     try {
-      const String apiKey = "Enter your gemini key here";
+      const String apiKey = "AIzaSyDmsdovmx8M-JrEXdlnDdOFicos7cf9Fsg";
       final url = Uri.parse(
         "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey",
       );

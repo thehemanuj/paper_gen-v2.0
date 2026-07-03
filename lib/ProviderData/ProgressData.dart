@@ -4,21 +4,28 @@ import '../assets/NotificationService.dart';
 
 class ProgressData extends ChangeNotifier {
   ProgressData() {
-    _loading = 1;
-    notifyListeners();
+    print('--- [ProgressData] Initializing ProgressData provider ---');
     _initializeHive();
-    _loading = 0;
-    notifyListeners();
   }
 
   late Box box;
   bool _isInitialized = false;
 
   Future<void> _initializeHive() async {
-    box = await Hive.openBox('progress-data');
-    _isInitialized = true;
-    fetchBoxData();
+    try {
+      if (Hive.isBoxOpen('progress-data')) {
+        box = Hive.box('progress-data');
+      } else {
+        box = await Hive.openBox('progress-data');
+      }
+      _isInitialized = true;
+      print('--- [ProgressData] Hive box ready. ---');
+      fetchBoxData();
+    } catch (e) {
+      print('--- [ProgressData] Error initializing Hive: $e ---');
+    }
   }
+
 
   void fetchBoxData() {
     if (box.isNotEmpty) {

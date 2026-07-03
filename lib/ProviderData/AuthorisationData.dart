@@ -52,6 +52,7 @@ class AuthorisationData extends ChangeNotifier {
   String get enteredAnswer => _enteredAnswer;
   bool get remember => _remember;
   bool get rememberedData => _rememberedData;
+  bool get isInitialised => _isInitialised;
   int get registrationValue => _registrationValue;
 
   void setUsername(String text) {
@@ -113,37 +114,56 @@ class AuthorisationData extends ChangeNotifier {
   }
 
   Future<void> _initialiseHive() async {
+    print('--- [AuthorisationData] Initializing Hive... ---');
     try {
-      box = await Hive.openBox('authorisation-data');
+      if (Hive.isBoxOpen('authorisation-data')) {
+        box = Hive.box('authorisation-data');
+      } else {
+        box = await Hive.openBox('authorisation-data');
+      }
       _isInitialised = true;
+      print('--- [AuthorisationData] Hive box is ready. ---');
       fetchBoxData();
     } catch (e) {
-      print('Error initializing Hive: $e');
+      print('--- [AuthorisationData] Error initializing Hive: $e ---');
     }
   }
 
   void fetchBoxData() {
-    if (!_isInitialised || box.isEmpty) return;
+    print('--- [AuthorisationData] Fetching box data (Init: $_isInitialised) ---');
+    if (!_isInitialised) return;
 
     try {
-      if (box.containsKey('remember')) {
-        _rememberedData = box.get('remember', defaultValue: false);
-        if (!_rememberedData) {
-          box.clear();
-          notifyListeners();
-          return;
+      // First priority: Check if we have remembered data in local storage
+      bool rememberBox = box.get('remember', defaultValue: false) == true;
+      print('--- [AuthorisationData] Remember in box: $rememberBox ---');
+      
+      if (box.isNotEmpty && rememberBox) {
+        _rememberedData = true;
+        _username = box.get('username', defaultValue: '');
+        _email = box.get('email', defaultValue: '');
+        _fn = box.get('fn', defaultValue: '');
+        _ln = box.get('ln', defaultValue: '');
+        print('--- [AuthorisationData] Data loaded from Hive for: $_email ---');
+      } 
+      // Second priority: If no local data, check if Firebase still has an active session
+      else {
+        final currentUser = FirebaseAuth.instance.currentUser;
+        if (currentUser != null) {
+          print('--- [AuthorisationData] Falling back to Firebase current user: ${currentUser.email} ---');
+          _rememberedData = true;
+          _email = currentUser.email ?? '';
+          _username = _email;
+        } else {
+          print('--- [AuthorisationData] No remembered data and no Firebase user. ---');
         }
       }
-
-      _username = box.get('username', defaultValue: '');
-      _email = box.get('email', defaultValue: '');
-      _fn = box.get('fn', defaultValue: '');
-      _ln = box.get('ln', defaultValue: '');
       notifyListeners();
     } catch (e) {
-      print('Error fetching box data: $e');
+      print('--- [AuthorisationData] Error fetching box data: $e ---');
     }
   }
+
 
   Future<void> emptyBox() async {
     if (!_isInitialised) return;

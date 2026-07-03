@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:paper_gen/ProviderData/ProgressData.dart';
 import 'package:paper_gen/ProviderData/QuestionData.dart';
 import 'package:paper_gen/assets/Button.dart';
+import 'package:paper_gen/assets/PdfGenerator.dart';
+import 'package:paper_gen/screens/assessment/ReviewQuestionsScreen.dart';
 import 'package:provider/provider.dart';
 
 class ScoreScreen extends StatelessWidget {
@@ -32,95 +34,136 @@ class ScoreScreen extends StatelessWidget {
           ),
           backgroundColor:
               proData.darkMode ? Color(0xff0A0E27) : Color(0xffFDFBF7),
-          body: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Image.asset(proData.darkMode
-                  ? 'images/papergen_bg2_dark.png'
-                  : 'images/papergen_bg2_light.png'),
-              Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      form == 0 ? 'Score' : 'Progress',
-                      style: TextStyle(
-                          color: textColor,
-                          fontSize: 30.0,
-                          fontFamily: 'Copper',
-                          decoration: TextDecoration.underline),
+          body: SafeArea(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Image.asset(proData.darkMode
+                      ? 'images/papergen_bg2_dark.png'
+                      : 'images/papergen_bg2_light.png'),
+                  Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          form == 0 ? 'Score' : 'Progress',
+                          style: TextStyle(
+                              color: textColor,
+                              fontSize: 30.0,
+                              fontFamily: 'Copper',
+                              decoration: TextDecoration.underline),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Table(
+                            columnWidths: const {
+                              0: FlexColumnWidth(3), // label column
+                              1: FlexColumnWidth(1), // value column
+                            },
+                            children: [
+                              if (form == 0)
+                                buildRow("Correct", qd.correctLocal, null, false,
+                                    textColor),
+                              if (form == 0)
+                                buildRow("Attempted", qd.attempted.length, null,
+                                    false, textColor),
+                              if (form == 0)
+                                buildRow("Viewed", qd.viewed.length, null, false,
+                                    textColor),
+                              if (form == 0)
+                                buildRow("Accuracy", qd.correctLocal,
+                                    qd.attempted.length, true, textColor),
+                              if (form == 0)
+                                buildRow(
+                                    "Score",
+                                    qd.correctLocal,
+                                    qd.currentGeneratedPaper?.subjects[0]
+                                            .questions.length ??
+                                        0,
+                                    false,
+                                    textColor),
+                              buildRow("Lifetime Correct",
+                                  qd.totalQuestionsCorrect, null, false, textColor),
+                              buildRow(
+                                  "Lifetime Attempted",
+                                  qd.totalQuestionsAttempted,
+                                  null,
+                                  false,
+                                  textColor),
+                              buildRow("Total Viewed", qd.totalQuestionsViewed,
+                                  null, false, textColor),
+                              buildRow(
+                                  "Lifetime Generated",
+                                  qd.totalQuestionsGenerated,
+                                  null,
+                                  false,
+                                  textColor),
+                              buildRow(
+                                  "Lifetime Accuracy",
+                                  qd.totalQuestionsCorrect,
+                                  qd.totalQuestionsAttempted,
+                                  true,
+                                  textColor),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Table(
-                        columnWidths: const {
-                          0: FlexColumnWidth(3), // label column
-                          1: FlexColumnWidth(1), // value column
-                        },
-                        children: [
-                          if (form == 0)
-                            buildRow("Correct", qd.correctLocal, null, false,
-                                textColor),
-                          if (form == 0)
-                            buildRow("Attempted", qd.attempted.length, null,
-                                false, textColor),
-                          if (form == 0)
-                            buildRow("Viewed", qd.viewed.length, null, false,
-                                textColor),
-                          if (form == 0)
-                            buildRow("Accuracy", qd.correctLocal,
-                                qd.attempted.length, true, textColor),
-                          if (form == 0)
-                            buildRow(
-                                "Score",
-                                qd.correctLocal,
-                                qd.currentGeneratedPaper?.subjects[0].questions
-                                        .length ??
-                                    0,
-                                false,
-                                textColor),
-                          buildRow("Lifetime Correct", qd.totalQuestionsCorrect,
-                              null, false, textColor),
-                          buildRow(
-                              "Lifetime Attempted",
-                              qd.totalQuestionsAttempted,
-                              null,
-                              false,
-                              textColor),
-                          buildRow("Total Viewed", qd.totalQuestionsViewed,
-                              null, false, textColor),
-                          buildRow(
-                              "Lifetime Generated",
-                              qd.totalQuestionsGenerated,
-                              null,
-                              false,
-                              textColor),
-                          buildRow(
-                              "Lifetime Accuracy",
-                              qd.totalQuestionsCorrect,
-                              qd.totalQuestionsAttempted,
-                              true,
-                              textColor),
-                        ],
-                      ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Column(
+                      children: [
+                        if (form == 0 && qd.currentGeneratedPaper != null)
+                          MyButton("Download Paper as PDF 📄", () async {
+                            try {
+                              final path = await PdfGenerator.generatePaperPdf(
+                                  qd.currentGeneratedPaper!);
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text("PDF saved to: $path"),
+                                    backgroundColor: const Color(0xff26a69a),
+                                  ),
+                                );
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text("Error: $e")),
+                                );
+                              }
+                            }
+                          }, 1),
+                        const SizedBox(height: 10),
+                        if (form == 0 && qd.currentGeneratedPaper != null)
+                          MyButton("Review Answers 🔍", () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const ReviewQuestionsScreen(),
+                              ),
+                            );
+                          }, 1),
+                        const SizedBox(height: 10),
+                        MyButton(
+                            form == 0 ? "End Assessment" : "Close Screen", () {
+                          if (form == 0) {
+                            qd.saveMetricsToFirebase(context);
+                            qd.resetData();
+                          }
+                          Navigator.pop(context);
+                        }, 1),
+                        const SizedBox(height: 50), // Increased bottom space
+                      ],
                     ),
-                  ],
-                ),
+                  )
+                ],
               ),
-              Padding(
-                padding: const EdgeInsets.all(12.0),
-                child:
-                    MyButton(form == 0 ? "End Assessment" : "Close Screen", () {
-                  if (form == 0) {
-                    qd.saveMetricsToFirebase(context);
-                    qd.resetData();
-                  }
-                  Navigator.pop(context);
-                }, 1),
-              )
-            ],
+            ),
           ),
         );
       },
